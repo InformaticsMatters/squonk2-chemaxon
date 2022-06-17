@@ -9,6 +9,9 @@ import squonk.jobs.chemaxon.util.MoleculeObject;
 import squonk.jobs.chemaxon.util.MoleculeUtils;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -103,6 +106,13 @@ public class SimpleCalcs {
         Stream<MoleculeObject> str = exec.calculate(mols, calcs, null, stats);
 
         if (outputFile != null) {
+
+            Path path = Paths.get(outputFile);
+            Path dir = path.getParent();
+            if (dir != null) {
+                Files.createDirectories(dir);
+            }
+
             String opts = null;
             if (outputFile.endsWith(".sdf")) {
                 opts = "sdf";

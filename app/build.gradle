@@ -22,6 +22,7 @@ plugins {
 
 import static com.bmuschko.gradle.docker.tasks.image.Dockerfile.*
 
+// set these in your ~/.gradle/gradle.properties file
 def cxnMavenUser = project.hasProperty('cxnMavenUser') ? project.cxnMavenUser : 'SetMe'
 def cxnMavenPassword = project.hasProperty('cxnMavenPassword') ? project.cxnMavenPassword : 'SetMe'
 
@@ -55,9 +56,6 @@ dependencies {
         exclude group:'chemaxonlib',module:'poi'
         exclude group:'chemaxonlib',module:'ws-commons-util'
 
-        //exclude group:'org.apache.httpcomponents',module:'httpclient'
-        //exclude group:'org.apache.httpcomponents',module:'httpcore'
-
         exclude group:'mysql'
         exclude group:'org.postgresql'
         exclude group:'chemaxonlib',module:'db2jcc4'
@@ -83,7 +81,7 @@ application {
     // Define the main class for the application.
     // this can be set as a commandline option e.g.
     // ./gradlew run --args="--help" -PmainClass=org.foo.Bar
-    mainClass = project.hasProperty("mainClass") ? project.getProperty("mainClass") : 'squonk.jobs.cdk.DescriptorsExec'
+    mainClass = project.hasProperty("mainClass") ? project.getProperty("mainClass") : 'squonk.jobs.chemaxon.SimpleCalcs'
 }
 
 tasks.named('test') {
@@ -96,8 +94,8 @@ docker {
         baseImage = 'openjdk:11-jre-slim'
         maintainer = 'Tim Dudgeon "tdudgeon@informaticsmatters.com"'
         ports = []
-        images = ['informaticsmatters/squonk2-cdk:latest']
-        mainClassName = 'squonk.jobs.cdk.DescriptorsExec'
+        images = ['informaticsmatters/squonk2-chemaxon:latest']
+        mainClassName = 'squonk.jobs.chemaxon.SimpleCalcs'
     }
 }
 

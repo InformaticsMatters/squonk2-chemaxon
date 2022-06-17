@@ -1,0 +1,166 @@
+---
+# Tools using the Chemistry Development Kit
+kind: DataManagerJobDefinition
+kind-version: '2021.1'
+name: ChemAxon molecular properties
+collection: chemaxon
+
+jobs:
+  chemaxon-molecular-props-simple:
+    name: ChemAxon simple molecular properties
+    description: >-
+      Calculate molecular properties using ChemAxon tools.
+    version: '1.0.0'
+    category: comp chem
+    keywords:
+    - chemaxon
+    - properties
+    image:
+      name: informaticsmatters/squonk2-chemaxon
+      tag: 'latest'
+      project-directory: /data
+      working-directory: /data
+      fix-permissions: true
+    # The container has no entrypoint so this is the command that is executed.
+    # The CLASSPATH environment variable in the container is set.
+    command: >-
+      java squonk.jobs.chemaxon.SimpleCalcs
+      --input '{{ inputFile }}'
+      --output '{{ outputFile }}'
+      {% if atomCount %}--atomCount{% endif %}
+      {% if bondCount %}--bondCount{% endif %}
+      {% if logp %}--logp{% endif %}
+      {% if logd %}--logd{% endif %}
+      {% if hba %}--hba{% endif %}
+      {% if hbd %}--hbd{% endif %}
+    variables:
+      order:
+        options:
+        - outputFile
+        - atomCount
+        - bondCount
+        - logp
+        - logd
+        - hbd
+        - hba
+      inputs:
+        type: object
+        required:
+        - inputFile
+        properties:
+          inputFile:
+            title: Input molecules
+            mime-types:
+            - chemical/x-mdl-sdfile
+            type: file
+      outputs:
+        type: object
+        properties:
+          results:
+            title: Output molecules
+            mime-types:
+            - chemical/x-mdl-sdfile
+            creates: '{{ outputFile }}'
+            type: file
+            annotation-properties:
+              fields-descriptor:
+                origin: squonk2-job
+                description: ChemAxon simple molecular properties
+                fields:
+                  CXN_atomCount:
+                    type: integer
+                    description: >-
+                      Atom count
+                    required: false
+                    active: true
+                  CXN_bondCount:
+                    type: integer
+                    description: >-
+                      Bond count
+                    required: false
+                    active: true
+                  CXN_cLogp:
+                    type: number
+                    description: >-
+                      cLogP
+                    required: false
+                    active: true
+                  CXN_logD:
+                    type: number
+                    description: >-
+                      logD at pH 7.4
+                    required: false
+                    active: true
+                  CXN_donorCount:
+                    type: integer
+                    description: >-
+                      H-bond donor count
+                    required: false
+                    active: true
+                  CXN_acceptorCount:
+                    type: integer
+                    description: >-
+                      H-bond acceptor count
+                    required: false
+                    active: true
+              service-execution:
+                service_ref: 'https://discourse.squonk.it/t/job-cdk-molecular-descriptors/126'
+              derived-from: inputFile
+      options:
+        type: object
+        required:
+        - outputFile
+        - atomCount
+        - bondCount
+        - logp
+        - logd
+        - hbd
+        - hba
+        properties:
+          outputFile:
+            title: Output file (.sdf)
+            type: string
+            default: cxn-molprops.sdf
+            pattern: "^[A-Za-z0-9_/\\.\\-]+$"
+          atomCount:
+            title: Calculate atom count
+            type: boolean
+            default: true
+          bondCount:
+            title: Calculate bond count
+            type: boolean
+            default: true
+          logp:
+            title: Calculate LogP
+            type: boolean
+            default: true
+          logd:
+            title: Calculate LogD at ph 7.4
+            type: boolean
+            default: true
+          hbd:
+            title: Calculate H-bond donors
+            type: boolean
+            default: true
+          hba:
+            title: Calculate H-bond acceptors
+            type: boolean
+            default: true
+    tests:
+      simple-execution:
+        inputs:
+          inputFile: data/dhfr_3d-10.sdf
+        options:
+          outputFile: foo/cxn-predictions.sdf
+          atomCount: true
+          bondCount: true
+          logp: true
+          logd: true
+          hba: true
+          hbd: true
+        checks:
+          exitCode: 0
+          outputs:
+          - name: foo/cxn-predictions.sdf
+            checks:
+            - exists: true
