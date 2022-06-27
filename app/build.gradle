@@ -80,7 +80,7 @@ dependencies {
 application {
     // Define the main class for the application.
     // this can be set as a commandline option e.g.
-    // ./gradlew run --args="--help" -PmainClass=org.foo.Bar
+    // ./gradlew run --args="--help" -PmainClass=squonk.jobs.chemaxon.SimpleCalcs
     mainClass = project.hasProperty("mainClass") ? project.getProperty("mainClass") : 'squonk.jobs.chemaxon.SimpleCalcs'
 }
 

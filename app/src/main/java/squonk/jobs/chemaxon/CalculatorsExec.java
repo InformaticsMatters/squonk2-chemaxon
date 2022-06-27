@@ -29,7 +29,7 @@ public class CalculatorsExec {
 
     private static final Logger LOG = Logger.getLogger(CalculatorsExec.class.getName());
 
-    private ChemTermsCalculator[] createCalculators(ChemTermsCalculator.Calc[] calcs, Object[][] params) {
+    public ChemTermsCalculator[] createCalculators(ChemTermsCalculator.Calc[] calcs, Object[][] params) {
         ChemTermsCalculator[] calculators = new ChemTermsCalculator[calcs.length];
 
         for (int i = 0; i < calcs.length; i++) {
@@ -79,6 +79,13 @@ public class CalculatorsExec {
             Object[][] params,
             Map<String, Integer> stats) {
         ChemTermsCalculator[] calculators = createCalculators(calcs, params);
+        return mols.peek(mo -> doCalculate(mo, calculators, stats));
+    }
+
+    public Stream<MoleculeObject> calculate(
+            Stream<MoleculeObject> mols,
+            ChemTermsCalculator[] calculators,
+            Map<String, Integer> stats) {
         return mols.peek(mo -> doCalculate(mo, calculators, stats));
     }
 

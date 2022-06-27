@@ -83,6 +83,10 @@ public class MoleculeObject {
         return mol.properties().get(name).getPropValue();
     }
 
+    public <T> T getProperty(String name, Class<T> type) {
+        return type.cast(mol.properties().get(name).getPropValue());
+    }
+
     /** Set this property to the original molecule and any representations that have been created.
      *
      * @param name

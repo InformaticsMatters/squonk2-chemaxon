@@ -11,10 +11,17 @@ jobs:
     description: >-
       Calculate molecular properties using ChemAxon tools.
     version: '1.0.0'
-    category: comp chem
+    category: molecular properties
     keywords:
     - chemaxon
     - properties
+    - atomcount
+    - bondcount
+    - logp
+    - logd
+    - hbd
+    - hba
+    - h-bond
     image:
       name: informaticsmatters/squonk2-chemaxon
       tag: 'latest'
@@ -27,6 +34,7 @@ jobs:
       java squonk.jobs.chemaxon.SimpleCalcs
       --input '{{ inputFile }}'
       --output '{{ outputFile }}'
+      {% if header is defined %}--header {{ header }}{% endif %}
       {% if atomCount %}--atomCount{% endif %}
       {% if bondCount %}--bondCount{% endif %}
       {% if logp %}--logp{% endif %}
@@ -37,6 +45,7 @@ jobs:
       order:
         options:
         - outputFile
+        - header
         - atomCount
         - bondCount
         - logp
@@ -52,12 +61,14 @@ jobs:
             title: Input molecules
             mime-types:
             - chemical/x-mdl-sdfile
+            - squonk/x-smiles
+            - text/csv
             type: file
       outputs:
         type: object
         properties:
           results:
-            title: Output molecules
+            title: Output file name
             mime-types:
             - chemical/x-mdl-sdfile
             creates: '{{ outputFile }}'
@@ -122,6 +133,10 @@ jobs:
             type: string
             default: cxn-molprops.sdf
             pattern: "^[A-Za-z0-9_/\\.\\-]+$"
+          header:
+            title: Include header for .smi output
+            type: boolean
+            default: true
           atomCount:
             title: Calculate atom count
             type: boolean
@@ -163,4 +178,115 @@ jobs:
           outputs:
           - name: foo/cxn-predictions.sdf
             checks:
+            - exists: true
+
+  chemaxon-molecular-props-logd:
+    name: ChemAxon logD calculator
+    description: >-
+      Calculate logD using ChemAxon tools.
+    version: '1.0.0'
+    category: molecular properties
+    keywords:
+    - chemaxon
+    - properties
+    - logd
+    image:
+      name: informaticsmatters/squonk2-chemaxon
+      tag: 'latest'
+      project-directory: /data
+      working-directory: /data
+      fix-permissions: true
+    # The container has no entrypoint so this is the command that is executed.
+    # The CLASSPATH environment variable in the container is set.
+    command: >-
+      java squonk.jobs.chemaxon.LogDCalc
+      --input '{{ inputFile }}'
+      --output '{{ outputFile }}'
+      {% if header is defined %}--header {{ header }}{% endif %}
+      --ph {{ ph }}
+      {% if minValue is defined %}--minValue {{ minValue }}{% endif %}
+      {% if maxValue is defined %}--maxValue {{ maxValue }}{% endif %}
+    variables:
+      order:
+        options:
+        - outputFile
+        - header
+        - ph
+        - minValue
+        - maxValue
+      inputs:
+        type: object
+        required:
+        - inputFile
+        properties:
+          inputFile:
+            title: Input molecules
+            mime-types:
+            - chemical/x-mdl-sdfile
+            - squonk/x-smiles
+            - text/csv
+            type: file
+      outputs:
+        type: object
+        properties:
+          results:
+            title: Output file name
+            mime-types:
+            - chemical/x-mdl-sdfile
+            creates: '{{ outputFile }}'
+            type: file
+            annotation-properties:
+              fields-descriptor:
+                origin: squonk2-job
+                description: ChemAxon logD calculator
+                fields:
+                  CXN_logD:
+                    type: number
+                    description: >-
+                      logD at pH {{ ph }}
+                    required: false
+                    active: true
+              service-execution:
+                service_ref: 'https://discourse.squonk.it/t/job-cdk-molecular-descriptors/126'
+              derived-from: inputFile
+      options:
+        type: object
+        required:
+        - outputFile
+        - ph
+        properties:
+          outputFile:
+            title: Output file (.sdf)
+            type: string
+            default: cxn-logd.sdf
+            pattern: "^[A-Za-z0-9_/\\.\\-]+$"
+          header:
+            title: Include header for .smi output
+            type: boolean
+            default: true
+          ph:
+            title: pH
+            type: number
+            default: 7.4
+            minimum: 0
+            maximum: 14
+          minValue:
+            title: Min value
+            type: number
+          maxValue:
+            title: Max value
+            type: number
+    tests:
+      simple-execution:
+        inputs:
+          inputFile: data/dhfr_3d-10.sdf
+        options:
+          outputFile: foo/cxn-logd.sdf
+          ph: 6.6
+        checks:
+          exitCode: 0
+          outputs:
+          - name: foo/cxn-logd.sdf
+            checks:
+            - exists: true
             - exists: true

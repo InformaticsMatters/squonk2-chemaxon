@@ -11,10 +11,21 @@ class SimpleCalcsTest extends Specification {
         def sc = new SimpleCalcs()
 
         when:
-        def count = sc.calculate(ChemTermsCalculator.Calc.values(), "../data/dhfr_3d.sdf", "../data/output.sdf")
+        def count = sc.calculate(ChemTermsCalculator.Calc.values(), "../data/dhfr_3d-10.sdf", null, false)
 
         then:
-        count == 756
+        count == 10
+    }
 
+    def "calc smi all"() {
+
+        setup:
+        def sc = new SimpleCalcs()
+
+        when:
+        def count = sc.calculate(ChemTermsCalculator.Calc.values(), "../data/10.smi", null, true)
+
+        then:
+        count == 10
     }
 }

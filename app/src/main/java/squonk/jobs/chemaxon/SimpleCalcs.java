@@ -1,7 +1,6 @@
 package squonk.jobs.chemaxon;
 
 import chemaxon.formats.MolExporter;
-import chemaxon.struc.Molecule;
 import org.apache.commons.cli.*;
 import squonk.jobs.chemaxon.util.ChemTermsCalculator;
 import squonk.jobs.chemaxon.util.DMLogger;
@@ -30,8 +29,10 @@ public class SimpleCalcs {
 
         Options options = new Options();
         options.addOption("h", "help", false, "Display help");
-        options.addOption(Option.builder("i").longOpt("input").hasArg().argName("file").desc("Input file with molecules (.sdf)").required().build());
-        options.addOption(Option.builder("o").longOpt("output").hasArg().argName("file").desc("Output file for molecules (.sdf)").required().build());
+        options.addOption(Option.builder("i").longOpt("input").hasArg().argName("file")
+                .desc("Input file with molecules (.sdf)").required().build());
+        options.addOption(Option.builder("o").longOpt("output").hasArg().argName("file")
+                .desc("Output file for molecules (.sdf)").build());
         options.addOption("a", "all", false, "Calculate all descriptors");
         options.addOption(null, "atomCount", false, "Calculate atom count");
         options.addOption(null, "bondCount", false, "Calculate bond count");
@@ -39,6 +40,8 @@ public class SimpleCalcs {
         options.addOption(null, "logd", false, "Calculate cLogD at pH 7.4");
         options.addOption(null, "hba", false, "Calculate H-bond acceptors");
         options.addOption(null, "hbd", false, "Calculate H-bond donors");
+        options.addOption(Option.builder("h").longOpt("header").hasArg().argName("true/false")
+                .desc("Include header line when writing SMILES").type(Boolean.class).build());
 
         options.addOption(Option.builder(null).longOpt("addhs").hasArg().argName("addhs").desc("Include hydrogens in output (true/false). If not specified then no changes made").build());
 
@@ -63,10 +66,14 @@ public class SimpleCalcs {
     private void calculate(CommandLine cmd) throws Exception {
 
         String inputFile = cmd.getOptionValue("input");
-        String outputFile = cmd.getOptionValue("output");
+        String outputFile = null;
+        if (cmd.hasOption("output")) {
+            outputFile = cmd.getOptionValue("output");
+        }
+        boolean header = Boolean.valueOf(cmd.getOptionValue("header", "true"));
 
         if (cmd.hasOption("all")) {
-            calculate(ChemTermsCalculator.Calc.values(), inputFile, outputFile);
+            calculate(ChemTermsCalculator.Calc.values(), inputFile, outputFile, header);
         } else {
             List<ChemTermsCalculator.Calc> calcs = new ArrayList<>();
 
@@ -92,11 +99,11 @@ public class SimpleCalcs {
 //                calcs.add(ChemTermsCalculator.Calc.);
 //            }
 
-            calculate(calcs.toArray(new ChemTermsCalculator.Calc[calcs.size()]), inputFile, outputFile);
+            calculate(calcs.toArray(new ChemTermsCalculator.Calc[calcs.size()]), inputFile, outputFile, header);
         }
     }
 
-    public long calculate(ChemTermsCalculator.Calc calcs[], String inputFile, String outputFile) throws Exception {
+    public long calculate(ChemTermsCalculator.Calc calcs[], String inputFile, String outputFile, boolean includeHeader) throws Exception {
 
         // read mols as stream
         Stream<MoleculeObject> mols = MoleculeUtils.readMoleculesAsStream(inputFile);
@@ -106,35 +113,7 @@ public class SimpleCalcs {
         Stream<MoleculeObject> str = exec.calculate(mols, calcs, null, stats);
 
         if (outputFile != null) {
-
-            Path path = Paths.get(outputFile);
-            Path dir = path.getParent();
-            if (dir != null) {
-                Files.createDirectories(dir);
-            }
-
-            String opts = null;
-            if (outputFile.endsWith(".sdf")) {
-                opts = "sdf";
-            } else {
-                throw new IllegalArgumentException("Unsupported output file format " + outputFile);
-            }
-            final MolExporter exporter = new MolExporter(outputFile, opts);
-            final AtomicInteger i = new AtomicInteger(0);
-            str = str.peek(mo -> {
-                try {
-                    i.incrementAndGet();
-                    exporter.write(mo.getMol());
-                } catch (IOException e) {
-                    DMLOG.logEvent(DMLogger.Level.WARNING, "Failed to export molecule " + i);
-                }
-            }).onClose(() -> {
-                try {
-                    exporter.close();
-                } catch (IOException e) {
-                    DMLOG.logEvent(DMLogger.Level.WARNING, "Failed to close MolExporter " + e.getMessage());
-                }
-            });
+            str = MoleculeUtils.addFileWriter(str, outputFile, includeHeader);
         }
 
         // make sure we consume the stream

@@ -38,34 +38,36 @@ public class ChemTermsCalculator {
 
 
     public enum Calc {
-        AtomCount("CXN_atomCount", "atomCount()"),
-        BondCount("CXN_bondCount", "bondCount()"),
-        LogP("CXN_cLogP", "logP()"),
+        AtomCount("CXN_atomCount", "atomCount()", Integer.class),
+        BondCount("CXN_bondCount", "bondCount()", Integer.class),
+        LogP("CXN_cLogP", "logP()", Double.class),
         // single quote has to be represented as 2 single quotes as the expansion uses MessageFormat
-        LogD("CXN_logD", "logD(''{0}'')", new Class[]{Float.class}, new Object[]{7.4f}),
-        HBondDonorCount("CXN_donorCount", "donorCount()"),
-        HBondAcceptorCount("CXN_acceptorCount", "acceptorCount()"),
+        LogD("CXN_logD", "logD(''{0}'')", Double.class, new Class[]{Float.class}, new Object[]{7.4f}),
+        HBondDonorCount("CXN_donorCount", "donorCount()", Integer.class),
+        HBondAcceptorCount("CXN_acceptorCount", "acceptorCount()", Integer.class),
 //        ("", "", "CXN_",
 
         ;
 
         private String symbol;
         private String chemTermsExpr;
+        private Class resultType;
         private String defaultPropName;
         Class[] paramTypes;
         Object[] defaultParams;
 
-        Calc(String symbol, String chemTermsExpr) {
-            this(symbol, chemTermsExpr, symbol, new Class[0], new Object[0]);
+        Calc(String symbol, String chemTermsExpr, Class resultType) {
+            this(symbol, chemTermsExpr, resultType, symbol, new Class[0], new Object[0]);
         }
 
-        Calc(String symbol, String chemTermsExpr, Class[] paramTypes, Object[] defaultParams) {
-            this(symbol, chemTermsExpr, symbol, paramTypes, defaultParams);
+        Calc(String symbol, String chemTermsExpr, Class resultType, Class[] paramTypes, Object[] defaultParams) {
+            this(symbol, chemTermsExpr, resultType, symbol, paramTypes, defaultParams);
         }
 
-        Calc(String symbol, String chemTermsExpr, String defaultPropName, Class[] paramTypes, Object[] defaultParams) {
+        Calc(String symbol, String chemTermsExpr, Class resultType, String defaultPropName, Class[] paramTypes, Object[] defaultParams) {
             this.symbol = symbol;
             this.chemTermsExpr = chemTermsExpr;
+            this.resultType = resultType;
             this.defaultPropName = defaultPropName;
             this.paramTypes = paramTypes;
             this.defaultParams = defaultParams;
@@ -77,6 +79,10 @@ public class ChemTermsCalculator {
 
         public String getChemTermsExpr() {
             return chemTermsExpr;
+        }
+
+        public Class getResultType() {
+            return resultType;
         }
 
         public String getDefaultPropName() {
