@@ -24,7 +24,7 @@ jobs:
     - h-bond
     image:
       name: informaticsmatters/squonk2-chemaxon
-      tag: 'latest'
+      tag: latest
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -202,7 +202,7 @@ jobs:
     - logd
     image:
       name: informaticsmatters/squonk2-chemaxon
-      tag: 'latest'
+      tag: latest
       project-directory: /data
       working-directory: /data
       fix-permissions: true
@@ -224,8 +224,8 @@ jobs:
       --output '{{ outputFile }}'
       {% if header is defined %}--header {{ header }}{% endif %}
       --ph {{ ph }}
-      {% if minValue is defined %}--minValue {{ minValue }}{% endif %}
-      {% if maxValue is defined %}--maxValue {{ maxValue }}{% endif %}
+      {% if minValue is defined %}--min-value {{ minValue }}{% endif %}
+      {% if maxValue is defined %}--max-value {{ maxValue }}{% endif %}
     variables:
       order:
         options:
@@ -303,6 +303,7 @@ jobs:
         options:
           outputFile: foo/cxn-logd.sdf
           ph: 6.6
+          minValue: 2.5
         checks:
           exitCode: 0
           outputs:

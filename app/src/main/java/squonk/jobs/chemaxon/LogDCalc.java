@@ -32,9 +32,9 @@ public class LogDCalc {
                 .desc("Output file for molecules (.sdf)").build());
         options.addOption(Option.builder("p").longOpt("ph").hasArg().argName("value").type(Float.class)
                 .desc("pH to use").required().build());
-        options.addOption(Option.builder("n").longOpt("minvalue").hasArg().argName("logD").type(Float.class)
+        options.addOption(Option.builder("n").longOpt("min-value").hasArg().argName("logD").type(Float.class)
                 .desc("Minimum value for filter").build());
-        options.addOption(Option.builder("x").longOpt("maxvalue").hasArg().argName("logD").type(Float.class)
+        options.addOption(Option.builder("x").longOpt("max-value").hasArg().argName("logD").type(Float.class)
                 .desc("Maximum value for filter").build());
         options.addOption(Option.builder("h").longOpt("header").hasArg().argName("true/false")
                 .desc("Include header line when writing SMILES").type(Boolean.class).build());
@@ -93,7 +93,7 @@ public class LogDCalc {
 
         // if output is defined then set up a MolExporter to write the results
         if (outputFile != null) {
-            MoleculeUtils.addFileWriter(str, outputFile, includeHeader);
+            str = MoleculeUtils.addFileWriter(str, outputFile, includeHeader);
         }
 
         // make sure we consume the stream
