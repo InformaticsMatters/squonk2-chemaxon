@@ -26,6 +26,8 @@ When using delimited text files the molecules are read and written as SMILES.
 
 ## How to run the job
 
+**NOTE**: to run this job you must have a ChemAxon license file registered as an asset in the Account server.
+
 ### Inputs
 
 * **Input molecules**: The molecules to calculate, in SDF or delimited text files.
@@ -38,12 +40,12 @@ When using delimited text files the molecules are read and written as SMILES.
 
 * **Output file**: The name of the output file. The format to output is determined using the file extension, `.sdf` or .smi.
 * **Include header**: when writing delimited text files writer the first line as a header line containing the field names.
-* **Calculate atom count**: Include the atom count as a property in the output
-* **Calculate bond count**: Include the bond count as a property in the output
-* **Calculate LogP**: Include the logP as a property in the output
-* **Calculate LogD**: Include the logD at pH 7.4 as a property in the output
-* **Calculate H-bond donors**: Include the h-bond donor count as a property in the output
-* **Calculate H-bond acceptors**: Include the h-bond acceptor count as a property in the output
+* **Calculate atom count**: Include the atom count as a property in the output.
+* **Calculate bond count**: Include the bond count as a property in the output.
+* **Calculate LogP**: Include the logP as a property in the output.
+* **Calculate LogD**: Include the logD at pH 7.4 as a property in the output.
+* **Calculate H-bond donors**: Include the h-bond donor count as a property in the output.
+* **Calculate H-bond acceptors**: Include the h-bond acceptor count as a property in the output.
 
 ## Outputs
 
@@ -54,4 +56,4 @@ The type of file is determined from the file extension, `.sdf` for SD file, `.sm
 
 ## Related topics
 
-- [chemaxon-molecular-props-logd](chemaxon-molecular-props-logd.md) Specialist calculator for logD.
+* [chemaxon-molecular-props-logd](chemaxon-molecular-props-logd.md) Specialist calculator for logD.

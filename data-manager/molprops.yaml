@@ -28,6 +28,16 @@ jobs:
       project-directory: /data
       working-directory: /data
       fix-permissions: true
+      file:
+      - name: /usr/local/license.cxl
+        content-from:
+          account-server-asset:
+            name: chemaxon-license-file
+      environment:
+      - name: CHEMAXON_LICENSE_URL
+        value-from:
+          constant:
+            value: /usr/local/license.cxl
     # The container has no entrypoint so this is the command that is executed.
     # The CLASSPATH environment variable in the container is set.
     command: >-
@@ -196,6 +206,16 @@ jobs:
       project-directory: /data
       working-directory: /data
       fix-permissions: true
+      file:
+      - name: /usr/local/license.cxl
+        content-from:
+          account-server-asset:
+            name: chemaxon-license-file
+      environment:
+      - name: CHEMAXON_LICENSE_URL
+        value-from:
+          constant:
+            value: /usr/local/license.cxl
     # The container has no entrypoint so this is the command that is executed.
     # The CLASSPATH environment variable in the container is set.
     command: >-

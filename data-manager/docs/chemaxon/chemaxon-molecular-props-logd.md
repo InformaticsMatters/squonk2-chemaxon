@@ -29,9 +29,9 @@ When using delimited text files the molecules are read and written as SMILES.
 
 * **Output file**: The name of the output file. The format to output is determined using the file extension, `.sdf` or .smi.
 * **Include header**: when writing delimited text files writer the first line as a header line containing the field names.
-* **pH**: The pH to use
-* **Min value**: The lower bound for the threshold (optional)
-* **Max value**: The upper bound for the threshold (optional)
+* **pH**: The pH to use.
+* **Min value**: The lower bound for the threshold (optional).
+* **Max value**: The upper bound for the threshold (optional).
 
 ## Outputs
 
@@ -42,4 +42,4 @@ The type of file is determined from the file extension, `.sdf` for SD file, `.sm
 
 ## Related topics
 
-- [chemaxon-molecular-props-simple](chemaxon-molecular-props-simple.md) simple calculator for several properties.
+* [chemaxon-molecular-props-simple](chemaxon-molecular-props-simple.md) simple calculator for several properties.
