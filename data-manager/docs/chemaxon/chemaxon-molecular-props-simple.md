@@ -26,7 +26,8 @@ When using delimited text files the molecules are read and written as SMILES.
 
 ## How to run the job
 
-**NOTE**: to run this job you must have a ChemAxon license file registered as an asset in the Account server.
+**NOTE**: to run this job you must have a ChemAxon license file registered as an asset with the name 
+`chemaxon-license-file` in the Account server.
 
 ### Inputs
 

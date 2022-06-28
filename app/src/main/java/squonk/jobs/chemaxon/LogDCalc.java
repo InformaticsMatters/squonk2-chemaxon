@@ -55,8 +55,11 @@ public class LogDCalc {
             String inputFile = cmd.getOptionValue("input");
             String outputFile = cmd.getOptionValue("output");
             Float ph = Float.valueOf(cmd.getOptionValue("ph"));
-            Float minValue = cmd.hasOption("minValue") ? Float.valueOf(cmd.getOptionValue("minValue")) : null;
-            Float maxValue = cmd.hasOption("maxValue") ? Float.valueOf(cmd.getOptionValue("maxValue")) : null;
+            Float minValue = cmd.hasOption("min-value") ? Float.valueOf(cmd.getOptionValue("min-value")) : null;
+            Float maxValue = cmd.hasOption("max-value") ? Float.valueOf(cmd.getOptionValue("max-value")) : null;
+            if (minValue != null || maxValue != null) {
+                DMLOG.logEvent(DMLogger.Level.INFO, "Applying min:max filters " + minValue + ":" + maxValue);
+            }
             boolean header = Boolean.valueOf(cmd.getOptionValue("header", "true"));
 
             LogDCalc calc = new LogDCalc();
@@ -76,6 +79,10 @@ public class LogDCalc {
                 new Object[][]{params});
 
         Stream<MoleculeObject> str = exec.calculate(mols, calculators, stats);
+
+        // we need to count the actual molecules calculated as the final number may be filtered
+        final AtomicInteger total = new AtomicInteger(0);
+        str = str.peek(mo -> total.incrementAndGet());
 
         // apply the filters
         if (minValue != null) {
@@ -98,8 +105,8 @@ public class LogDCalc {
 
         // make sure we consume the stream
         long count = str.count();
-        DMLOG.logEvent(DMLogger.Level.INFO, "Processed " + count + " molecules");
-        DMLOG.logCost((float) count, false);
+        DMLOG.logEvent(DMLogger.Level.INFO, "Processed " + total + " molecules, " + count + " passed filters");
+        DMLOG.logCost((float) total.get(), false);
         return count;
     }
 }
