@@ -9,12 +9,20 @@ These properties are all "simple" properties with no parameters, or using sensib
 Some properties have more specialist jobs where parameters can be specified.
 
 These properties (with the corresponding field names in brackets) are:
+- Molecular weight (CXN_molecularWeight)
+- Molecular formula (CXN_molecularFormula)
 - Atom count (CXN_atomCount)
+- Heavy atom count (CXN_heavyAtomCount)
 - Bond count (CXN_bondCount)
 - LogP (CXN_cLogP)
 - LogD at pH 7.4 (CXN_cLogP)
 - H-bond donor count (CXN_donorCount)
 - H-bond acceptor count (CXN_acceptorCount)
+- Ring count (CXN_ringCount)
+- Ring atom count (CXN_ringAtomCount)
+- Aromatic ring count (CXN_aromaticRingCount)
+- Aromatic atom count (CXN_aromaticAtomCount)
+- Rotatable bond count (CXN_rotatableBondCount)
 
 The jobs can handle SD-files or delimited text files (e.g. tab separated) as input and output.
 When using delimited text files the molecules are read and written as SMILES.
@@ -41,12 +49,7 @@ When using delimited text files the molecules are read and written as SMILES.
 
 * **Output file**: The name of the output file. The format to output is determined using the file extension, `.sdf` or .smi.
 * **Include header**: when writing delimited text files writer the first line as a header line containing the field names.
-* **Calculate atom count**: Include the atom count as a property in the output.
-* **Calculate bond count**: Include the bond count as a property in the output.
-* **Calculate LogP**: Include the logP as a property in the output.
-* **Calculate LogD**: Include the logD at pH 7.4 as a property in the output.
-* **Calculate H-bond donors**: Include the h-bond donor count as a property in the output.
-* **Calculate H-bond acceptors**: Include the h-bond acceptor count as a property in the output.
+* **Calculate XYZ**: An checkbox for each of the calculated properties listed above.
 
 ## Outputs
 

@@ -1,21 +1,15 @@
 package squonk.jobs.chemaxon;
 
-import chemaxon.formats.MolExporter;
 import org.apache.commons.cli.*;
 import squonk.jobs.chemaxon.util.ChemTermsCalculator;
 import squonk.jobs.chemaxon.util.DMLogger;
 import squonk.jobs.chemaxon.util.MoleculeObject;
 import squonk.jobs.chemaxon.util.MoleculeUtils;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
@@ -34,12 +28,20 @@ public class SimpleCalcs {
         options.addOption(Option.builder("o").longOpt("output").hasArg().argName("file")
                 .desc("Output file for molecules (.sdf)").build());
         options.addOption("a", "all", false, "Calculate all descriptors");
+        options.addOption(null, "molecularWeight", false, "Calculate molecular weight");
+        options.addOption(null, "molecularFormula", false, "Calculate molecular formula");
         options.addOption(null, "atomCount", false, "Calculate atom count");
+        options.addOption(null, "heavyAtomCount", false, "Calculate heavy atom count");
         options.addOption(null, "bondCount", false, "Calculate bond count");
         options.addOption(null, "logp", false, "Calculate cLogP");
         options.addOption(null, "logd", false, "Calculate cLogD at pH 7.4");
-        options.addOption(null, "hba", false, "Calculate H-bond acceptors");
-        options.addOption(null, "hbd", false, "Calculate H-bond donors");
+        options.addOption(null, "hba", false, "Calculate H-bond acceptor count");
+        options.addOption(null, "hbd", false, "Calculate H-bond donor count");
+        options.addOption(null, "ringCount", false, "Calculate ring count");
+        options.addOption(null, "ringAtomCount", false, "Calculate ring atom count");
+        options.addOption(null, "aromaticRingCount", false, "Calculate aromatic ring count");
+        options.addOption(null, "aromaticAtomCount", false, "Calculate aromatic atom count");
+        options.addOption(null, "rotatableBondCount", false, "Calculate rotatable bond count");
         options.addOption(Option.builder("h").longOpt("header").hasArg().argName("true/false")
                 .desc("Include header line when writing SMILES").type(Boolean.class).build());
 
@@ -77,8 +79,17 @@ public class SimpleCalcs {
         } else {
             List<ChemTermsCalculator.Calc> calcs = new ArrayList<>();
 
+            if (cmd.hasOption("molecularWeight")) {
+                calcs.add(ChemTermsCalculator.Calc.MolecularWeight);
+            }
+            if (cmd.hasOption("molecularFormula")) {
+                calcs.add(ChemTermsCalculator.Calc.MolecularFormula);
+            }
             if (cmd.hasOption("atomCount")) {
                 calcs.add(ChemTermsCalculator.Calc.AtomCount);
+            }
+            if (cmd.hasOption("heavyAtomCount")) {
+                calcs.add(ChemTermsCalculator.Calc.HeavyAtomCount);
             }
             if (cmd.hasOption("bondCount")) {
                 calcs.add(ChemTermsCalculator.Calc.BondCount);
@@ -94,6 +105,21 @@ public class SimpleCalcs {
             }
             if (cmd.hasOption("hbd")) {
                 calcs.add(ChemTermsCalculator.Calc.HBondDonorCount);
+            }
+            if (cmd.hasOption("ringCount")) {
+                calcs.add(ChemTermsCalculator.Calc.RingCount);
+            }
+            if (cmd.hasOption("ringAtomCount")) {
+                calcs.add(ChemTermsCalculator.Calc.RingAtomCount);
+            }
+            if (cmd.hasOption("aromaticRingCount")) {
+                calcs.add(ChemTermsCalculator.Calc.AromaticRingCount);
+            }
+            if (cmd.hasOption("aromaticAtomCount")) {
+                calcs.add(ChemTermsCalculator.Calc.AromaticAtomCount);
+            }
+            if (cmd.hasOption("rotatableBondCount")) {
+                calcs.add(ChemTermsCalculator.Calc.RotatableBondCount);
             }
 //            if (cmd.hasOption("")) {
 //                calcs.add(ChemTermsCalculator.Calc.);

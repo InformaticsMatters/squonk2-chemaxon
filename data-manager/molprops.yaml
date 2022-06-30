@@ -44,24 +44,40 @@ jobs:
       java squonk.jobs.chemaxon.SimpleCalcs
       --input '{{ inputFile }}'
       --output '{{ outputFile }}'
-      {% if header is defined %}--header {{ header }}{% endif %}
-      {% if atomCount %}--atomCount{% endif %}
-      {% if bondCount %}--bondCount{% endif %}
-      {% if logp %}--logp{% endif %}
-      {% if logd %}--logd{% endif %}
-      {% if hba %}--hba{% endif %}
-      {% if hbd %}--hbd{% endif %}
+      {% if header is defined and header %}--header {{ header }}{% endif %}
+      {% if molecularWeight is defined and molecularWeight %}--molecularWeight{% endif %}
+      {% if molecularFormula is defined and molecularFormula %}--molecularFormula{% endif %}
+      {% if atomCount is defined and atomCount %}--atomCount{% endif %}
+      {% if heavyAtomCount is defined and heavyAtomCount%}--heavyAtomCount{% endif %}
+      {% if bondCount is defined and bondCount %}--bondCount{% endif %}
+      {% if logp is defined and logp %}--logp{% endif %}
+      {% if logd is defined and logd %}--logd{% endif %}
+      {% if hba is defined and hba %}--hba{% endif %}
+      {% if hbd is defined and hbd %}--hbd{% endif %}
+      {% if ringCount is defined and ringCount %}--ringCount{% endif %}
+      {% if ringAtomCount is defined and ringAtomCount %}--ringAtomCount{% endif %}
+      {% if aromaticRingCount is defined and aromaticRingCount %}--aromaticRingCount{% endif %}
+      {% if aromaticAtomCount is defined and aromaticAtomCount %}--aromaticAtomCount{% endif %}
+      {% if rotatableBondCount is defined and rotatableBondCount %}--rotatableBondCount{% endif %}
     variables:
       order:
         options:
         - outputFile
         - header
+        - molecularWeight
+        - molecularFormula
         - atomCount
+        - heavyAtomCount
         - bondCount
         - logp
         - logd
         - hbd
         - hba
+        - ringCount
+        - ringAtomCount
+        - aromaticRingCount
+        - aromaticAtomCount
+        - rotatableBondCount
       inputs:
         type: object
         required:
@@ -88,40 +104,74 @@ jobs:
                 origin: squonk2-job
                 description: ChemAxon simple molecular properties
                 fields:
+                  CXN_molecularWeight:
+                    type: number
+                    description: Molecular weight
+                    required: false
+                    active: true
+                  CXN_molecularFormula:
+                    type: string
+                    description: Molecular formula
+                    required: false
+                    active: true
                   CXN_atomCount:
                     type: integer
-                    description: >-
-                      Atom count
+                    description: Atom count
+                    required: false
+                    active: true
+                  CXN_heavyAtomCount:
+                    type: number
+                    description: Heavy atom count
                     required: false
                     active: true
                   CXN_bondCount:
                     type: integer
-                    description: >-
-                      Bond count
+                    description: Bond count
                     required: false
                     active: true
                   CXN_cLogp:
                     type: number
-                    description: >-
-                      cLogP
+                    description: cLogP
                     required: false
                     active: true
                   CXN_logD:
                     type: number
-                    description: >-
-                      logD at pH 7.4
+                    description: logD at pH 7.4
                     required: false
                     active: true
                   CXN_donorCount:
                     type: integer
-                    description: >-
-                      H-bond donor count
+                    description: H-bond donor count
                     required: false
                     active: true
                   CXN_acceptorCount:
                     type: integer
-                    description: >-
-                      H-bond acceptor count
+                    description: H-bond acceptor count
+                    required: false
+                    active: true
+                  CXN_ringCount:
+                    type: integer
+                    description: Ring count
+                    required: false
+                    active: true
+                  CXN_ringAtomCount:
+                    type: integer
+                    description: Ring atom count
+                    required: false
+                    active: true
+                  CXN_aromaticRingCount:
+                    type: integer
+                    description: Aromatic ring count
+                    required: false
+                    active: true
+                  CXN_aromaticAtomCount:
+                    type: integer
+                    description: Aromatic atom count
+                    required: false
+                    active: true
+                  CXN_rotatableBondCount:
+                    type: integer
+                    description: Rotatable bond count
                     required: false
                     active: true
               service-execution:
@@ -131,12 +181,6 @@ jobs:
         type: object
         required:
         - outputFile
-        - atomCount
-        - bondCount
-        - logp
-        - logd
-        - hbd
-        - hba
         properties:
           outputFile:
             title: Output file (.sdf)
@@ -147,8 +191,20 @@ jobs:
             title: Include header for .smi output
             type: boolean
             default: true
+          molecularWeight:
+            title: Calculate molecular weight
+            type: boolean
+            default: true
+          molecularFormula:
+            title: Calculate molecular formula
+            type: boolean
+            default: true
           atomCount:
             title: Calculate atom count
+            type: boolean
+            default: true
+          heavyAtomCount:
+            title: Calculate heavy atom count
             type: boolean
             default: true
           bondCount:
@@ -171,18 +227,46 @@ jobs:
             title: Calculate H-bond acceptors
             type: boolean
             default: true
+          ringCount:
+            title: Calculate ring count
+            type: boolean
+            default: true
+          ringAtomCount:
+            title: Calculate ring atom count
+            type: boolean
+            default: true
+          aromaticRingCount:
+            title: Calculate aromatic ring count
+            type: boolean
+            default: true
+          aromaticAtomCount:
+            title: Calculate aromatic atom count
+            type: boolean
+            default: true
+          rotatableBondCount:
+            title: Calculate rotatable bond count
+            type: boolean
+            default: true
     tests:
       simple-execution:
         inputs:
           inputFile: data/dhfr_3d-10.sdf
         options:
           outputFile: foo/cxn-predictions.sdf
+          molecularWeight: true
+          molecularFormula: true
           atomCount: true
+          heavyAtomCount: true
           bondCount: true
           logp: true
           logd: true
           hba: true
           hbd: true
+          ringCount: true
+          ringAtomCount: true
+          aromaticRingCount: true
+          aromaticAtomCount: true
+          rotatableBondCount: true
         checks:
           exitCode: 0
           outputs:

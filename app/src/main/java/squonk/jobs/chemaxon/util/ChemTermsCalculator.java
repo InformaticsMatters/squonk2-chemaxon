@@ -38,14 +38,22 @@ public class ChemTermsCalculator {
 
 
     public enum Calc {
+        MolecularWeight("CXN_molecularWeight", "mass()", Double.class),
+        MolecularFormula("CXN_molecularFormula", "formula()", String.class),
         AtomCount("CXN_atomCount", "atomCount()", Integer.class),
+        HeavyAtomCount("CXN_heavyAtomCount", "atomCount() - atomCount('1')", Double.class),
         BondCount("CXN_bondCount", "bondCount()", Integer.class),
         LogP("CXN_cLogP", "logP()", Double.class),
         // single quote has to be represented as 2 single quotes as the expansion uses MessageFormat
         LogD("CXN_logD", "logD(''{0}'')", Double.class, new Class[]{Float.class}, new Object[]{7.4f}),
         HBondDonorCount("CXN_donorCount", "donorCount()", Integer.class),
         HBondAcceptorCount("CXN_acceptorCount", "acceptorCount()", Integer.class),
-//        ("", "", "CXN_",
+        RingCount("CXN_ringCount", "ringCount()", Integer.class),
+        RingAtomCount("CXN_ringAtomCount", "ringAtomCount()", Integer.class),
+        AromaticRingCount("CXN_aromaticRingCount", "aromaticRingCount()", Integer.class),
+        AromaticAtomCount("CXN_aromaticAtomCount", "aromaticAtomCount()", Integer.class),
+        RotatableBondCount("CXN_rotatableBondCount", "rotatableBondCount()", Integer.class)
+//        ("CXN_", "()", .class),
 
         ;
 
