@@ -4,7 +4,7 @@ This describes how to run the `chemaxon-molecular-props-logd` job from the `mole
 
 ## What the job does
 
-This job calculates logD. The pH can be specified along with threshold values for filtering out molcules.
+This job calculates logD. The pH can be specified along with threshold values for filtering out molecules.
 The logD is added to the output as an additional field with the field name `CXN_cLogP`.
 
 The jobs can handle SD-files or delimited text files (e.g. tab separated) as input and output.
