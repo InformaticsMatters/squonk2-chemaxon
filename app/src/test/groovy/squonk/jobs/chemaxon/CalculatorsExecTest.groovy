@@ -33,7 +33,7 @@ class CalculatorsExecTest extends Specification {
 
         setup:
         def calculators = ChemTermsCalculator.Calc.values()
-        def mol = MolImporter.importMol("c1ccccc1") // benzene
+        def mol = MolImporter.importMol("O=C(CCc1c[nH]c2ccccc12)OCc3ccccc3") // benzene
         def mo = new MoleculeObject(mol)
         def stats = [:]
         def exec = new CalculatorsExec()

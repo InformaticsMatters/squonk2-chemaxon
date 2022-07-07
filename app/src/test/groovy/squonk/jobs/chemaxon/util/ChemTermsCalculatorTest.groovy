@@ -35,7 +35,7 @@ class ChemTermsCalculatorTest extends Specification {
         def result = calculator.processMolecule(mol, stats)
 
         then:
-        result.properties().get(calc.getDefaultPropName()).getPropValue() == 12
+        result == 12
     }
 
 }

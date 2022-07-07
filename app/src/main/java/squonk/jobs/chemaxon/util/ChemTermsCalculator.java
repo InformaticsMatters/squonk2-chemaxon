@@ -25,6 +25,8 @@ import chemaxon.struc.Molecule;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -52,7 +54,9 @@ public class ChemTermsCalculator {
         RingAtomCount("CXN_ringAtomCount", "ringAtomCount()", Integer.class),
         AromaticRingCount("CXN_aromaticRingCount", "aromaticRingCount()", Integer.class),
         AromaticAtomCount("CXN_aromaticAtomCount", "aromaticAtomCount()", Integer.class),
-        RotatableBondCount("CXN_rotatableBondCount", "rotatableBondCount()", Integer.class)
+        RotatableBondCount("CXN_rotatableBondCount", "rotatableBondCount()", Integer.class),
+        AcidicPKa("CXN_aPKa", "acidicpKa('1')", Double.class),
+        BasicPKa("CXN_bPKa", "basicpKa('1')", Double.class),
 //        ("CXN_", "()", .class),
 
         ;
@@ -175,18 +179,35 @@ public class ChemTermsCalculator {
         return new ChemTermsCalculator(calc, calc.defaultPropName, new Object[0]);
     }
 
+    /**
+     * Evaluate the chemical terms expression and set the result to the MoleculeObject that is returned
+     * @param mo
+     * @param stats
+     * @return
+     * @throws IOException
+     */
+    public MoleculeObject processMoleculeObject(MoleculeObject mo, Map<String, Integer> stats) throws IOException {
+        if (mo == null || mo.getMol() == null) {
+            return mo;
+        }
+
+        Molecule mol = mo.getMol();
+        Object result = processMolecule(mol, stats);
+
+        if (result != null) {
+            mo.setProperty(propName, result);
+        }
+        return mo;
+    }
 
     /**
-     * Process a molecule. If this is a standard evaluator the result of the
-     * chemical terms evaluation is added as a property of the molecule. If the
-     * evaluator is a filter then null is returned to signify that the filter
-     * has failed
+     * Process a molecule and return its calculated value.
+     * The result is NOT set as a property of the molecule.
      *
      * @param mol The molecule.
-     * @return The molecule with the calculated property set, or null if this
-     * evaluator is a filter and the filter fails.
+     * @return The result.
      */
-    public Molecule processMolecule(Molecule mol, Map<String, Integer> stats) {
+    public Object processMolecule(Molecule mol, Map<String, Integer> stats) {
         if (mol == null) {
             return null;
         }
@@ -195,71 +216,47 @@ public class ChemTermsCalculator {
         return evaluateMoleculeImpl(context, stats);
     }
 
-    public MoleculeObject processMoleculeObject(MoleculeObject mo, Map<String, Integer> stats) throws IOException {
-        if (mo == null || mo.getMol() == null) {
-            return mo;
-        }
-
-        Molecule mol = mo.getMol();
-        mol = processMolecule(mol, stats);
-
-        if (mol == null) {
-            return null;
-        } else {
-            // TODO - review this
-            Map<String, Object> results = getResults(mol);
-            if (mol != mo.getMol()) {
-                mo = new MoleculeObject(mol);
-            }
-            mo.setProperties(results);
-            return mo;
-        }
-    }
-
-    private Molecule evaluateMoleculeImpl(MolContext context, Map<String, Integer> stats) {
+    private Object evaluateMoleculeImpl(MolContext context, Map<String, Integer> stats) {
         final ChemJEP chemJEP = pool.checkout();
-
         try {
             Object result = chemJEP.evaluate(context);
+            result = filterResult(result);
             if (result != null) {
-                context.getMolecule().setPropertyObject(propName, result);
                 ExecutionStats.increment(stats, calc.symbol, 1);
             }
+            return result;
         } catch (ParseException ex) {
             LOG.log(Level.WARNING, "Failed to evaluate chem terms expression. Property will be missing.", ex);
+            return null;
         } finally {
             pool.checkin(chemJEP);
         }
-        return context.getMolecule();
     }
 
     /**
-     * Allows the result to be extracted from the Molecule once it has been
-     * calculated. If not Mode.Calculate an empty Map is returned
+     * Do some necessary transformations on the result
      *
-     * @param mol
-     * @return the calculated value as a Map, key being the property name.
+     * @param value
+     * @return The possible transformed result.
      */
-    public Map<String, Object> getResults(Molecule mol) {
+    public Object filterResult(Object value) {
 
-        Object value = mol.getPropertyObject(propName);
         if (value != null) {
             if (value instanceof Double) {
                 Double d = (Double) value;
                 if (!d.isNaN() && !d.isInfinite()) {
-                    return Collections.singletonMap(propName, d);
+                    return d;
                 }
             } else if (value instanceof Float) {
                 Float f = (Float) value;
                 if (!f.isNaN() && !f.isInfinite()) {
-                    return Collections.singletonMap(propName, f);
+                    return f;
                 }
             } else {
-                return Collections.singletonMap(propName, value);
+                return value;
             }
         }
-
-        return Collections.emptyMap();
+        return null;
     }
 
     class ChemJEPPool extends Pool<ChemJEP> {
