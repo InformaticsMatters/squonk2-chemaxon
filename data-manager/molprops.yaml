@@ -17,11 +17,13 @@ jobs:
     - properties
     - atomcount
     - bondcount
+    - ringcount
     - logp
     - logd
     - hbd
     - hba
     - h-bond
+    - tpsa
     image:
       name: informaticsmatters/squonk2-chemaxon
       tag: latest
@@ -59,6 +61,7 @@ jobs:
       {% if aromaticRingCount is defined and aromaticRingCount %}--aromaticRingCount{% endif %}
       {% if aromaticAtomCount is defined and aromaticAtomCount %}--aromaticAtomCount{% endif %}
       {% if rotatableBondCount is defined and rotatableBondCount %}--rotatableBondCount{% endif %}
+      {% if tpsa is defined and tpsa %}--tpsa{% endif %}
     variables:
       order:
         options:
@@ -78,6 +81,7 @@ jobs:
         - aromaticRingCount
         - aromaticAtomCount
         - rotatableBondCount
+        - tpsa
       inputs:
         type: object
         required:
@@ -174,6 +178,11 @@ jobs:
                     description: Rotatable bond count
                     required: false
                     active: true
+                  CXN_tpsa:
+                    type: number
+                    description: Topological polar surface area
+                    required: false
+                    active: true
               service-execution:
                 service_ref: 'https://discourse.squonk.it/t/job-cdk-molecular-descriptors/126'
               derived-from: inputFile
@@ -247,6 +256,10 @@ jobs:
             title: Calculate rotatable bond count
             type: boolean
             default: true
+          tpsa:
+            title: Calculate topological polar surface area
+            type: boolean
+            default: true
     tests:
       simple-execution:
         inputs:
@@ -267,6 +280,7 @@ jobs:
           aromaticRingCount: true
           aromaticAtomCount: true
           rotatableBondCount: true
+          tpsa: true
         checks:
           exitCode: 0
           outputs:
@@ -308,6 +322,7 @@ jobs:
       --output '{{ outputFile }}'
       {% if header is defined %}--header {{ header }}{% endif %}
       --ph {{ ph }}
+      {% if mode is defined %}--mode {{ mode }}{% endif %}
       {% if minValue is defined %}--min-value {{ minValue }}{% endif %}
       {% if maxValue is defined %}--max-value {{ maxValue }}{% endif %}
     variables:
@@ -316,6 +331,7 @@ jobs:
         - outputFile
         - header
         - ph
+        - mode
         - minValue
         - maxValue
       inputs:
@@ -374,6 +390,13 @@ jobs:
             default: 7.4
             minimum: 0
             maximum: 14
+          mode:
+            title: Filter mode
+            type: string
+            default: none
+            enum:
+            - pass
+            - fail
           minValue:
             title: Min value
             type: number
@@ -513,5 +536,249 @@ jobs:
           exitCode: 0
           outputs:
           - name: foo/cxn-pka.sdf
+            checks:
+            - exists: true
+
+  chemaxon-gupta-bbb:
+    name: Gupta BBB
+    description: >-
+      Blood brain barrier prediction using the Gupta method and ChemAxon tools.
+    version: '1.0.0'
+    category: molecular properties
+    keywords:
+    - chemaxon
+    - properties
+    - bbb
+    image:
+      name: informaticsmatters/squonk2-chemaxon
+      tag: latest
+      project-directory: /data
+      working-directory: /data
+      fix-permissions: true
+      file:
+      - name: /usr/local/license.cxl
+        content-from:
+          account-server-asset:
+            name: chemaxon-license-file
+      environment:
+      - name: CHEMAXON_LICENSE_URL
+        value-from:
+          constant:
+            value: /usr/local/license.cxl
+    # The container has no entrypoint so this is the command that is executed.
+    # The CLASSPATH environment variable in the container is set.
+    command: >-
+      java squonk.jobs.chemaxon.GuptaBBBCalc
+      --input '{{ inputFile }}'
+      --output '{{ outputFile }}'
+      {% if header is defined %}--header {{ header }}{% endif %}
+      {% if mode is defined %}--mode {{ mode }}{% endif %}
+      {% if minValue is defined %}--min-value {{ minValue }}{% endif %}
+      {% if maxValue is defined %}--max-value {{ maxValue }}{% endif %}
+    variables:
+      order:
+        options:
+        - outputFile
+        - header
+        - mode
+        - minValue
+        - maxValue
+      inputs:
+        type: object
+        required:
+        - inputFile
+        properties:
+          inputFile:
+            title: Input molecules
+            mime-types:
+            - chemical/x-mdl-sdfile
+            - squonk/x-smiles
+            - text/csv
+            type: file
+      outputs:
+        type: object
+        properties:
+          results:
+            title: Output file name
+            mime-types:
+            - chemical/x-mdl-sdfile
+            creates: '{{ outputFile }}'
+            type: file
+            annotation-properties:
+              fields-descriptor:
+                origin: squonk2-job
+                description: Gupta BBB prediction
+                fields:
+                  Gupta_BBB:
+                    type: number
+                    description: Gupta BBB prediction
+                    required: false
+                    active: true
+              service-execution:
+                service_ref: 'https://discourse.squonk.it/t/job-cdk-molecular-descriptors/126'
+              derived-from: inputFile
+      options:
+        type: object
+        required:
+        - outputFile
+        - ph
+        properties:
+          outputFile:
+            title: Output file (.sdf or .smi)
+            type: string
+            default: gupta-bbb.sdf
+            pattern: "^[A-Za-z0-9_/\\.\\-]+$"
+          header:
+            title: Include header for .smi output
+            type: boolean
+            default: true
+          mode:
+            title: Filter mode
+            type: string
+            default: none
+            enum:
+            - pass
+            - fail
+          minValue:
+            title: Min value
+            type: number
+          maxValue:
+            title: Max value
+            type: number
+    tests:
+      simple-execution:
+        inputs:
+          inputFile: data/dhfr_3d-10.sdf
+        options:
+          outputFile: foo/gupta-bbb.sdf
+          mode: pass
+          minValue: 4
+          maxValue: 6
+        checks:
+          exitCode: 0
+          outputs:
+          - name: foo/gupta-bbb.sdf
+            checks:
+            - exists: true
+
+  chemaxon-abbvie-mps:
+    name: Abbvie MPS
+    description: >-
+      Abbvie multiparametric score prediction using ChemAxon tools.
+    version: '1.0.0'
+    category: molecular properties
+    keywords:
+    - chemaxon
+    - properties
+    - bbb
+    image:
+      name: informaticsmatters/squonk2-chemaxon
+      tag: latest
+      project-directory: /data
+      working-directory: /data
+      fix-permissions: true
+      file:
+      - name: /usr/local/license.cxl
+        content-from:
+          account-server-asset:
+            name: chemaxon-license-file
+      environment:
+      - name: CHEMAXON_LICENSE_URL
+        value-from:
+          constant:
+            value: /usr/local/license.cxl
+    # The container has no entrypoint so this is the command that is executed.
+    # The CLASSPATH environment variable in the container is set.
+    command: >-
+      java squonk.jobs.chemaxon.AbbvieMPSCalc
+      --input '{{ inputFile }}'
+      --output '{{ outputFile }}'
+      {% if header is defined %}--header {{ header }}{% endif %}
+      {% if mode is defined %}--mode {{ mode }}{% endif %}
+      {% if minValue is defined %}--min-value {{ minValue }}{% endif %}
+      {% if maxValue is defined %}--max-value {{ maxValue }}{% endif %}
+    variables:
+      order:
+        options:
+        - outputFile
+        - header
+        - mode
+        - minValue
+        - maxValue
+      inputs:
+        type: object
+        required:
+        - inputFile
+        properties:
+          inputFile:
+            title: Input molecules
+            mime-types:
+            - chemical/x-mdl-sdfile
+            - squonk/x-smiles
+            - text/csv
+            type: file
+      outputs:
+        type: object
+        properties:
+          results:
+            title: Output file name
+            mime-types:
+            - chemical/x-mdl-sdfile
+            creates: '{{ outputFile }}'
+            type: file
+            annotation-properties:
+              fields-descriptor:
+                origin: squonk2-job
+                description: Abbvie MPS prediction
+                fields:
+                  Abbvie_MPS:
+                    type: number
+                    description: Abbvie MPS prediction
+                    required: false
+                    active: true
+              service-execution:
+                service_ref: 'https://discourse.squonk.it/t/job-cdk-molecular-descriptors/126'
+              derived-from: inputFile
+      options:
+        type: object
+        required:
+        - outputFile
+        - ph
+        properties:
+          outputFile:
+            title: Output file (.sdf or .smi)
+            type: string
+            default: gupta-bbb.sdf
+            pattern: "^[A-Za-z0-9_/\\.\\-]+$"
+          header:
+            title: Include header for .smi output
+            type: boolean
+            default: true
+          mode:
+            title: Filter mode
+            type: string
+            default: none
+            enum:
+            - pass
+            - fail
+          minValue:
+            title: Min value
+            type: number
+          maxValue:
+            title: Max value
+            type: number
+    tests:
+      simple-execution:
+        inputs:
+          inputFile: data/dhfr_3d-10.sdf
+        options:
+          outputFile: foo/abbvie_mps.sdf
+          mode: pass
+          minValue: 4
+          maxValue: 8
+        checks:
+          exitCode: 0
+          outputs:
+          - name: foo/abbvie_mps.sdf
             checks:
             - exists: true

@@ -42,10 +42,10 @@ public class SimpleCalcs {
         options.addOption(null, "aromaticRingCount", false, "Calculate aromatic ring count");
         options.addOption(null, "aromaticAtomCount", false, "Calculate aromatic atom count");
         options.addOption(null, "rotatableBondCount", false, "Calculate rotatable bond count");
+        options.addOption(null, "tpsa", false, "Calculate topological polar surface area");
+
         options.addOption(Option.builder("h").longOpt("header").hasArg().argName("true/false")
                 .desc("Include header line when writing SMILES").type(Boolean.class).build());
-
-        options.addOption(Option.builder(null).longOpt("addhs").hasArg().argName("addhs").desc("Include hydrogens in output (true/false). If not specified then no changes made").build());
 
         if (args.length == 0 | (args.length == 1 && ("-h".equals(args[0]) | "--help".equals(args[0])))) {
             HelpFormatter formatter = new HelpFormatter();
@@ -120,6 +120,9 @@ public class SimpleCalcs {
             }
             if (cmd.hasOption("rotatableBondCount")) {
                 calcs.add(ChemTermsCalculator.Calc.RotatableBondCount);
+            }
+            if (cmd.hasOption("tpsa")) {
+                calcs.add(ChemTermsCalculator.Calc.TPSA);
             }
 //            if (cmd.hasOption("")) {
 //                calcs.add(ChemTermsCalculator.Calc.);

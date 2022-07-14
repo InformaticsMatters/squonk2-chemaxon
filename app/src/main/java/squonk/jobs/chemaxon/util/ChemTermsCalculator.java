@@ -57,6 +57,7 @@ public class ChemTermsCalculator {
         RotatableBondCount("CXN_rotatableBondCount", "rotatableBondCount()", Integer.class),
         AcidicPKa("CXN_aPKa", "acidicpKa('1')", Double.class),
         BasicPKa("CXN_bPKa", "basicpKa('1')", Double.class),
+        TPSA("CXN_", "topologicalPolarSurfaceArea()", Double.class),
 //        ("CXN_", "()", .class),
 
         ;

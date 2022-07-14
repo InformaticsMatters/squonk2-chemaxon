@@ -23,6 +23,7 @@ These properties (with the corresponding field names in brackets) are:
 - Aromatic ring count (CXN_aromaticRingCount)
 - Aromatic atom count (CXN_aromaticAtomCount)
 - Rotatable bond count (CXN_rotatableBondCount)
+- Topological polar surface area (CXN_tpsa)
 
 The jobs can handle SD-files or delimited text files (e.g. tab separated) as input and output.
 When using delimited text files the molecules are read and written as SMILES.

@@ -1,16 +1,10 @@
 package squonk.jobs.chemaxon;
 
-import chemaxon.formats.MolExporter;
 import org.apache.commons.cli.*;
-import squonk.jobs.chemaxon.util.ChemTermsCalculator;
-import squonk.jobs.chemaxon.util.DMLogger;
-import squonk.jobs.chemaxon.util.MoleculeObject;
-import squonk.jobs.chemaxon.util.MoleculeUtils;
+import squonk.jobs.chemaxon.util.*;
+import squonk.jobs.chemaxon.util.Filters.FilterMode;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -32,6 +26,8 @@ public class LogDCalc {
                 .desc("Output file for molecules (.sdf)").build());
         options.addOption(Option.builder("p").longOpt("ph").hasArg().argName("value").type(Float.class)
                 .desc("pH to use").required().build());
+        options.addOption(Option.builder("m").longOpt("mode").hasArg().argName("mode")
+                .desc("Filter mode [none, pass, fail]").build());
         options.addOption(Option.builder("n").longOpt("min-value").hasArg().argName("logD").type(Float.class)
                 .desc("Minimum value for filter").build());
         options.addOption(Option.builder("x").longOpt("max-value").hasArg().argName("logD").type(Float.class)
@@ -54,6 +50,8 @@ public class LogDCalc {
 
             String inputFile = cmd.getOptionValue("input");
             String outputFile = cmd.getOptionValue("output");
+            String mode = cmd.getOptionValue("mode");
+            FilterMode filterMode = (mode == null ? FilterMode.none : Filters.FilterMode.valueOf(mode));
             Float ph = Float.valueOf(cmd.getOptionValue("ph"));
             Float minValue = cmd.hasOption("min-value") ? Float.valueOf(cmd.getOptionValue("min-value")) : null;
             Float maxValue = cmd.hasOption("max-value") ? Float.valueOf(cmd.getOptionValue("max-value")) : null;
@@ -63,11 +61,12 @@ public class LogDCalc {
             boolean header = Boolean.valueOf(cmd.getOptionValue("header", "true"));
 
             LogDCalc calc = new LogDCalc();
-            calc.calculate(inputFile, outputFile, header, ph, minValue, maxValue);
+            calc.calculate(inputFile, outputFile, header, ph, filterMode, minValue, maxValue);
         }
     }
 
-    public long calculate(String inputFile, String outputFile, boolean includeHeader, Float ph, Float minValue, Float maxValue) throws IOException {
+    public long calculate(String inputFile, String outputFile, boolean includeHeader, Float ph,
+                          FilterMode filterMode, Float minValue, Float maxValue) throws IOException {
         // read mols as stream
         Stream<MoleculeObject> mols = MoleculeUtils.readMoleculesAsStream(inputFile);
         CalculatorsExec exec = new CalculatorsExec();
@@ -78,33 +77,22 @@ public class LogDCalc {
                 new ChemTermsCalculator.Calc[]{ChemTermsCalculator.Calc.LogD},
                 new Object[][]{params});
 
-        Stream<MoleculeObject> str = exec.calculate(mols, calculators, stats);
+        mols = exec.calculate(mols, calculators, stats);
 
         // we need to count the actual molecules calculated as the final number may be filtered
         final AtomicInteger total = new AtomicInteger(0);
-        str = str.peek(mo -> total.incrementAndGet());
+        mols = mols.peek(mo -> total.incrementAndGet());
 
         // apply the filters
-        if (minValue != null) {
-            str = str.filter(mo -> {
-                Double value = (Double) (mo.getProperty(calculators[0].getPropName()));
-                return (value != null && value >= minValue);
-            });
-        }
-        if (maxValue != null) {
-            str = str.filter(mo -> {
-                Double value = (Double) (mo.getProperty(calculators[0].getPropName()));
-                return (value != null && value >= maxValue);
-            });
-        }
+        mols = Filters.applyFilters(mols, filterMode, calculators[0].getPropName(), minValue, maxValue);
 
         // if output is defined then set up a MolExporter to write the results
         if (outputFile != null) {
-            str = MoleculeUtils.addFileWriter(str, outputFile, includeHeader);
+            mols = MoleculeUtils.addFileWriter(mols, outputFile, includeHeader);
         }
 
         // make sure we consume the stream
-        long count = str.count();
+        long count = mols.count();
         DMLOG.logEvent(DMLogger.Level.INFO, "Processed " + total + " molecules, " + count + " passed filters");
         DMLOG.logCost((float) total.get(), false);
         return count;
