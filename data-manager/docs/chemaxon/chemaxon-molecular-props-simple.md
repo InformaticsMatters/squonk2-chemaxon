@@ -18,6 +18,8 @@ These properties (with the corresponding field names in brackets) are:
 - LogD at pH 7.4 (CXN_cLogP)
 - H-bond donor count (CXN_donorCount)
 - H-bond acceptor count (CXN_acceptorCount)
+- H-bond donor sites (CXN_donorSites)
+- H-bond acceptor sites (CXN_acceptorSites)
 - Ring count (CXN_ringCount)
 - Ring atom count (CXN_ringAtomCount)
 - Aromatic ring count (CXN_aromaticRingCount)
