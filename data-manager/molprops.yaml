@@ -26,7 +26,7 @@ jobs:
     - tpsa
     image:
       name: informaticsmatters/squonk2-chemaxon
-      tag: license
+      tag: latest
       project-directory: /data
       working-directory: /data
       fix-permissions: true
