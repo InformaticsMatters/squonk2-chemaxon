@@ -50,6 +50,8 @@ public class ChemTermsCalculator {
         LogD("CXN_logD", "logD(''{0}'')", Double.class, new Class[]{Float.class}, new Object[]{7.4f}),
         HBondDonorCount("CXN_donorCount", "donorCount()", Integer.class),
         HBondAcceptorCount("CXN_acceptorCount", "acceptorCount()", Integer.class),
+        HBondDonorSites("CXN_donorSites", "donorSiteCount()", Integer.class),
+        HBondAcceptorSites("CXN_acceptorSites", "acceptorSiteCount()", Integer.class),
         RingCount("CXN_ringCount", "ringCount()", Integer.class),
         RingAtomCount("CXN_ringAtomCount", "ringAtomCount()", Integer.class),
         AromaticRingCount("CXN_aromaticRingCount", "aromaticRingCount()", Integer.class),

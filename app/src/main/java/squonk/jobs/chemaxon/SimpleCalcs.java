@@ -35,8 +35,10 @@ public class SimpleCalcs {
         options.addOption(null, "bondCount", false, "Calculate bond count");
         options.addOption(null, "logp", false, "Calculate cLogP");
         options.addOption(null, "logd", false, "Calculate cLogD at pH 7.4");
-        options.addOption(null, "hba", false, "Calculate H-bond acceptor count");
-        options.addOption(null, "hbd", false, "Calculate H-bond donor count");
+        options.addOption(null, "hba-count", false, "Calculate H-bond acceptor count");
+        options.addOption(null, "hbd-count", false, "Calculate H-bond donor count");
+        options.addOption(null, "hba-sites", false, "Calculate H-bond acceptor sites");
+        options.addOption(null, "hbd-sites", false, "Calculate H-bond donor sites");
         options.addOption(null, "ringCount", false, "Calculate ring count");
         options.addOption(null, "ringAtomCount", false, "Calculate ring atom count");
         options.addOption(null, "aromaticRingCount", false, "Calculate aromatic ring count");
@@ -100,11 +102,17 @@ public class SimpleCalcs {
             if (cmd.hasOption("logd")) {
                 calcs.add(ChemTermsCalculator.Calc.LogD);
             }
-            if (cmd.hasOption("hba")) {
+            if (cmd.hasOption("hba-count")) {
                 calcs.add(ChemTermsCalculator.Calc.HBondAcceptorCount);
             }
-            if (cmd.hasOption("hbd")) {
+            if (cmd.hasOption("hbd-count")) {
                 calcs.add(ChemTermsCalculator.Calc.HBondDonorCount);
+            }
+            if (cmd.hasOption("hba-sites")) {
+                calcs.add(ChemTermsCalculator.Calc.HBondAcceptorSites);
+            }
+            if (cmd.hasOption("hbd-sites")) {
+                calcs.add(ChemTermsCalculator.Calc.HBondDonorSites);
             }
             if (cmd.hasOption("ringCount")) {
                 calcs.add(ChemTermsCalculator.Calc.RingCount);
