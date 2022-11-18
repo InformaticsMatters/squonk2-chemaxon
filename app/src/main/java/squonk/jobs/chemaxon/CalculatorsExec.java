@@ -30,13 +30,21 @@ public class CalculatorsExec {
     private static final Logger LOG = Logger.getLogger(CalculatorsExec.class.getName());
 
     public ChemTermsCalculator[] createCalculators(ChemTermsCalculator.Calc[] calcs, Object[][] params) {
+        String[] propNames = new String[calcs.length];
+        for (int i=0; i<calcs.length; i++) {
+            propNames[i] = calcs[i].getDefaultPropName();
+        }
+        return createCalculators(calcs,  params, propNames);
+    }
+
+    public ChemTermsCalculator[] createCalculators(ChemTermsCalculator.Calc[] calcs, Object[][] params, String[] propNames) {
         ChemTermsCalculator[] calculators = new ChemTermsCalculator[calcs.length];
 
         for (int i = 0; i < calcs.length; i++) {
             if (params != null && params.length > i && params[i] != null) {
-                calculators[i] = ChemTermsCalculator.create(calcs[i], params[i]);
+                calculators[i] = ChemTermsCalculator.create(calcs[i], propNames[i], params[i]);
             } else {
-                calculators[i] = ChemTermsCalculator.create(calcs[i], new Object[0]);
+                calculators[i] = ChemTermsCalculator.create(calcs[i], propNames[i], new Object[0]);
             }
         }
         return calculators;

@@ -57,8 +57,8 @@ public class ChemTermsCalculator {
         AromaticRingCount("CXN_aromaticRingCount", "aromaticRingCount()", Integer.class),
         AromaticAtomCount("CXN_aromaticAtomCount", "aromaticAtomCount()", Integer.class),
         RotatableBondCount("CXN_rotatableBondCount", "rotatableBondCount()", Integer.class),
-        AcidicPKa("CXN_aPKa", "acidicpKa('1')", Double.class),
-        BasicPKa("CXN_bPKa", "basicpKa('1')", Double.class),
+        AcidicPKa("CXN_aPKa", "acidicpKa(''{0}'')", Double.class, new Class[]{Integer.class}, new Object[]{1}),
+        BasicPKa("CXN_bPKa", "basicpKa(''{0}'')", Double.class, new Class[]{Integer.class}, new Object[]{1}),
         TPSA("CXN_", "topologicalPolarSurfaceArea()", Double.class),
 //        ("CXN_", "()", .class),
 

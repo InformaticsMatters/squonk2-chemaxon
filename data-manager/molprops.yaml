@@ -474,9 +474,13 @@ jobs:
       java squonk.jobs.chemaxon.PKaCalc
       --input '{{ inputFile }}'
       --output '{{ outputFile }}'
-      {% if header is defined %}--header {{ header }}{% endif %}
-      {% if acidic is defined %}--acidic{% endif %}
-      {% if basic is defined %}--basic{% endif %}
+      {% if header is defined and header %}--header {{ header }}{% endif %}
+      {% if acidic is defined and acidic %}--acidic{% endif %}
+      {% if basic is defined and basic %}--basic{% endif %}
+      {% if count is defined %}--count {{ count }}{% endif %}
+      {% if temperature is defined %}--temperature {{ temperature }}{% endif %}
+      {% if minBasic is defined %}--min-basic {{ minBasic }}{% endif %}
+      {% if maxAcidic is defined %}--max-acidic {{ maxAcidic }}{% endif %}
     variables:
       order:
         options:
@@ -484,6 +488,10 @@ jobs:
         - header
         - acidic
         - basic
+        - count
+        - temperature
+        - minBasic
+        - maxAcidic
       inputs:
         type: object
         required:
@@ -529,7 +537,9 @@ jobs:
         type: object
         required:
         - outputFile
-        - ph
+        - acidic
+        - basic
+        - count
         properties:
           outputFile:
             title: Output file (.sdf or .smi)
@@ -548,6 +558,22 @@ jobs:
             title: Calculate basic pKa
             type: boolean
             default: true
+          count:
+            title: Number of pKas to calculate
+            type: integer
+            default: 3
+          temperature:
+            title: Temperature (K)
+            type: number
+            default: 298
+          minBasic:
+            title: Minimum basic pKa
+            type: number
+            default: -2.0
+          maxAcidic:
+            title: Maximum acidic pKa
+            type: number
+            default: 16
     tests:
       simple-execution:
         inputs:
