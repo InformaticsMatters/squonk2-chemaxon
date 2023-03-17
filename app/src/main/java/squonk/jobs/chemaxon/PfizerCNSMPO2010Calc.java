@@ -29,16 +29,14 @@ import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 /**
- * Calculates Abbvie MPS score.
- * Calculation is: abs(logD - 3) + num_aromatic_rings + num_rotatable_bonds
+ * Calculates CNS MPO score
  */
-public class AbbvieMPSCalc {
+public class PfizerCNSMPO2010Calc {
 
-    private static final Logger LOG = Logger.getLogger(AbbvieMPSCalc.class.getName());
+    private static final Logger LOG = Logger.getLogger(PfizerCNSMPO2010Calc.class.getName());
     private static final DMLogger DMLOG = new DMLogger();
 
-    public static final String SCORE_FIELD = "Abbvie_MPS";
-
+    public static final String SCORE_FIELD = "PFIZER_CNS_MPO_2010";
 
     public static void main(String[] args) throws Exception {
 
@@ -64,7 +62,7 @@ public class AbbvieMPSCalc {
         } else {
             CommandLineParser parser = new DefaultParser();
             CommandLine cmd = parser.parse(options, args);
-            StringBuilder builder = new StringBuilder(AbbvieMPSCalc.class.getName());
+            StringBuilder builder = new StringBuilder(PfizerCNSMPO2010Calc.class.getName());
             for (String arg : args) {
                 builder.append(" ").append(arg);
             }
@@ -82,7 +80,7 @@ public class AbbvieMPSCalc {
             }
             boolean header = Boolean.valueOf(cmd.getOptionValue("header", "true"));
 
-            AbbvieMPSCalc calc = new AbbvieMPSCalc();
+            PfizerCNSMPO2010Calc calc = new PfizerCNSMPO2010Calc();
             calc.calculate(inputFile, outputFile, header, filterMode, minValue, maxValue);
         }
     }
@@ -96,20 +94,34 @@ public class AbbvieMPSCalc {
 
         final ChemTermsCalculator[] calculators = exec.createCalculators(
                 new ChemTermsCalculator.Calc[]{
-                        ChemTermsCalculator.Calc.AromaticRingCount,
-                        ChemTermsCalculator.Calc.RotatableBondCount,
-                        ChemTermsCalculator.Calc.LogD
+                        ChemTermsCalculator.Calc.LogP,
+                        ChemTermsCalculator.Calc.LogD,
+                        ChemTermsCalculator.Calc.MolecularWeight,
+                        ChemTermsCalculator.Calc.TPSA,
+                        ChemTermsCalculator.Calc.HBondDonorCount,
+                        ChemTermsCalculator.Calc.BasicPKa
                 },
                 new Object[][]{
                         null,
+                        new Object[] {7.4f},
                         null,
-                        new Object[] {7.4f}
-                }
-        );
+                        null,
+                        null,
+                        null
+                });
+
+        NumberTransform[] transforms = new NumberTransform[]{
+                MpoFunctions.createRampFunction(1d, 0d, 3d, 5d),
+                MpoFunctions.createRampFunction(1d, 0d, 2d, 4d),
+                MpoFunctions.createRampFunction(1d, 0d, 360d, 500d),
+                MpoFunctions.createHump1Function(0d, 1d, 0d, 20d, 40d, 90d, 120d),
+                MpoFunctions.createRampFunction(1d, 0d, 0.5d, 3.5d),
+                MpoFunctions.createRampFunction(1d, 0d, 8d, 10d)
+        };
 
         mols = mols.peek(mo -> {
             Molecule mol = mo.getMol();
-            Double score = doCalculate(mol, calculators, stats);
+            Double score = doCalculate(mol, calculators, transforms, stats);
             if (score != null) {
                 mo.setProperty(SCORE_FIELD, score);
             }
@@ -136,32 +148,43 @@ public class AbbvieMPSCalc {
     }
 
     /**
-     * Performs the MPS calculation
+     * Performs the CNS MPO calculation
      * @param mol
      * @param calculators
      * @param stats
      * @return
      */
-    protected Double doCalculate(Molecule mol, ChemTermsCalculator[] calculators, Map<String, Integer> stats) {
+    protected Double doCalculate(Molecule mol, ChemTermsCalculator[] calculators,
+                                 NumberTransform[] transforms,
+                                 Map<String, Integer> stats) {
 
-        // this does the calculations that are used to generate the BBB score
-        Integer aro = (Integer)calculators[0].processMolecule(mol, stats);
-        Integer rot = (Integer)calculators[1].processMolecule(mol, stats);
-        Double logd = (Double)calculators[2].processMolecule(mol, stats);
+        // this does the calculations that are used to generate the MPO score
+        Double logp = (Double)calculators[0].processMolecule(mol, stats);
+        Double logd = (Double)calculators[1].processMolecule(mol, stats);
+        Double mw = (Double)calculators[2].processMolecule(mol, stats);
+        Double tpsa = (Double)calculators[3].processMolecule(mol, stats);
+        Integer hbd = (Integer)calculators[4].processMolecule(mol, stats);
+        Double bpka = (Double)calculators[5].processMolecule(mol, stats);
 
-        if (aro == null || rot == null || logd == null) {
-            LOG.info(String.format("Data missing. Inputs aro=%s rot=%s logd=%s", aro, rot, logd));
+        if (logp == null || logd == null || mw == null || tpsa == null || hbd == null || bpka == null) {
+            LOG.info(String.format("Data missing. Inputs logp=%s logd=%s mw=%s tpsa=%s hbd=%s bpka=%s",
+                    logp, logd, mw, tpsa, hbd, bpka));
             return null;
         }
 
-        LOG.finer(String.format("Inputs are: aro=%s, rot=%s, logd=%s", aro, rot, logd));
+        LOG.finer(String.format("Inputs are: logp=%s logd=%s mw=%s tpsa=%s hbd=%s bpka=%s",
+                logp, logd, mw, tpsa, hbd, bpka));
 
-        // abs(logD - 3) + num_aromatic_rings + num_rotatable_bonds
-        double score = Utils.roundToSignificantFigures(Math.abs(logd - 3d) + (double)aro + (double)rot, 4);
+        Double logp_score = transforms[0].transform(logp);
+        Double logd_score = transforms[1].transform(logd);
+        Double mw_score = transforms[2].transform(mw);
+        Double tpsa_score = transforms[3].transform(tpsa);
+        Double hbd_score = transforms[4].transform(hbd.doubleValue());
+        Double bpka_score = transforms[5].transform(bpka);
 
-        LOG.finer(String.format("Score is %s", score));
-
-        return score;
+        Double score_mpo = Utils.roundToSignificantFigures(
+                logp_score + logd_score + mw_score + tpsa_score + hbd_score + bpka_score, 4);
+        return score_mpo;
     }
 
 }

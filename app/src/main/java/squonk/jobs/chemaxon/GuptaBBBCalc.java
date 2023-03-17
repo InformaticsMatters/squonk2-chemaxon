@@ -1,3 +1,19 @@
+/*
+ * Copyright (c) 2023 Informatics Matters Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package squonk.jobs.chemaxon;
 
 import chemaxon.struc.Molecule;
@@ -154,9 +170,9 @@ public class GuptaBBBCalc {
 
         double pka = findCorrectPKa(apka, bpka);
 
-        mw = roundToSignificantFigures(mw, 4);
-        tpsa = roundToSignificantFigures(tpsa, 4);
-        pka = roundToSignificantFigures(pka, 4);
+        mw = Utils.roundToSignificantFigures(mw, 4);
+        tpsa = Utils.roundToSignificantFigures(tpsa, 4);
+        pka = Utils.roundToSignificantFigures(pka, 4);
 
         double score_aro = calculateAROScore(aro);
         double score_hac = calculateHACScore(hac);
@@ -165,7 +181,7 @@ public class GuptaBBBCalc {
         double score_tpsa = calculateTPSAScore(tpsa);
         double score_pka = calculatePKAScore(pka);
 
-        double score_mps = roundToSignificantFigures(
+        double score_mps = Utils.roundToSignificantFigures(
                 score_aro + score_hac + (1.5d * score_mwhbn) + (2d * score_tpsa) + (0.5d * score_pka), 4);
         LOG.fine(String.format("Scores are: aro=%s, hac=%s, mwhbn=%s, tpsa=%s, pka=%s, bbb=%s",
                 score_aro, score_hac, score_mwhbn, score_tpsa, score_pka, score_mps));
@@ -301,9 +317,4 @@ public class GuptaBBBCalc {
         }
     }
 
-    public static double roundToSignificantFigures(double value, int significant) {
-        MathContext mathContext = new MathContext(significant, RoundingMode.HALF_UP);
-        BigDecimal bigDecimal = new BigDecimal(value, mathContext);
-        return bigDecimal.doubleValue();
-    }
 }

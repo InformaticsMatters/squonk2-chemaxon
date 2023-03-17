@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Informatics Matters Ltd.
+ * Copyright (c) 2023 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,9 +24,6 @@ import chemaxon.struc.Molecule;
 
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;

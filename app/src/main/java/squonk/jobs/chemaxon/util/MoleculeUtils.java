@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2022  Informatics Matters Ltd.
+ *  Copyright (c) 2023  Informatics Matters Ltd.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -72,7 +72,8 @@ public class MoleculeUtils {
         return mols.map(m -> new MoleculeObject(m));
     }
 
-    public static Stream<MoleculeObject> addFileWriter(Stream<MoleculeObject> mols, String outputFile, boolean includeHeader) throws IOException {
+    public static Stream<MoleculeObject> addFileWriter(Stream<MoleculeObject> mols, String outputFile, boolean includeHeader)
+            throws IOException {
         Path path = Paths.get(outputFile);
         Path dir = path.getParent();
         if (dir != null) {
