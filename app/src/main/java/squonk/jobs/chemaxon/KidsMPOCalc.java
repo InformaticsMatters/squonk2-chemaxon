@@ -29,15 +29,14 @@ import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 /**
- * Calculates CNS MPO score
- * See Wager et al. DOI: 10.1021/cn100008c
+ * Calculates KIDS MPO score
  */
-public class PfizerCNSMPO2010Calc {
+public class KidsMPOCalc {
 
-    private static final Logger LOG = Logger.getLogger(PfizerCNSMPO2010Calc.class.getName());
+    private static final Logger LOG = Logger.getLogger(KidsMPOCalc.class.getName());
     private static final DMLogger DMLOG = new DMLogger();
 
-    public static final String SCORE_FIELD = "PFIZER_CNS_MPO_2010";
+    public static final String SCORE_FIELD = "KIDS_MPO";
 
     public static void main(String[] args) throws Exception {
 
@@ -81,7 +80,7 @@ public class PfizerCNSMPO2010Calc {
             }
             boolean header = Boolean.valueOf(cmd.getOptionValue("header", "true"));
 
-            PfizerCNSMPO2010Calc calc = new PfizerCNSMPO2010Calc();
+            KidsMPOCalc calc = new KidsMPOCalc();
             calc.calculate(inputFile, outputFile, header, filterMode, minValue, maxValue);
         }
     }
@@ -93,31 +92,38 @@ public class PfizerCNSMPO2010Calc {
         final CalculatorsExec exec = new CalculatorsExec();
         final Map<String, Integer> stats = new HashMap<>();
 
+//        .tpsa()
+//                .rotatableBondCount()
+//                .atomCount("7", "AtomCount_N_CXN")
+//                .atomCount("8", "AtomCount_O_CXN")
+//                .donorCount()
+//                .aromaticRingCount()
+
         final ChemTermsCalculator[] calculators = exec.createCalculators(
                 new ChemTermsCalculator.Calc[]{
-                        ChemTermsCalculator.Calc.LogP,
-                        ChemTermsCalculator.Calc.LogD,
-                        ChemTermsCalculator.Calc.MolecularWeight,
                         ChemTermsCalculator.Calc.TPSA,
+                        ChemTermsCalculator.Calc.RotatableBondCount,
+                        ChemTermsCalculator.Calc.ElementCount,
+                        ChemTermsCalculator.Calc.ElementCount,
                         ChemTermsCalculator.Calc.HBondDonorCount,
-                        ChemTermsCalculator.Calc.BasicPKa
+                        ChemTermsCalculator.Calc.AromaticRingCount
                 },
                 new Object[][]{
                         null,
-                        new Object[] {7.4f},
                         null,
-                        null,
+                        new Object[] {7},
+                        new Object[] {8},
                         null,
                         null
                 });
 
         NumberTransform[] transforms = new NumberTransform[]{
-                MpoFunctions.createRampFunction(1d, 0d, 3d, 5d),
-                MpoFunctions.createRampFunction(1d, 0d, 2d, 4d),
-                MpoFunctions.createRampFunction(1d, 0d, 360d, 500d),
-                MpoFunctions.createHump1Function(0d, 1d, 0d, 20d, 40d, 90d, 120d),
-                MpoFunctions.createRampFunction(1d, 0d, 0.5d, 3.5d),
-                MpoFunctions.createRampFunction(1d, 0d, 8d, 10d)
+                MpoFunctions.createHump1Function(0d, 1d, 0d, 64.63d, 75.85d, 92.40d, 138.3d),
+                MpoFunctions.createHump1Function(0.2d, 1d, 0d, 1d, 2d, 3d, 5d),
+                MpoFunctions.createHump2Function(0d, 1d, 0.2d, 0d, 2d, 4d, 5d, 6d, 8d, 9d),
+                MpoFunctions.createHump1Function(0.2d, 1d, 0d, 0d, 1d, 1d, 3d),
+                MpoFunctions.createHump2Function(0d, 1d, 0.2d, 0d, 0d, 2d, 3d, 4d, 6d, 7d),
+                MpoFunctions.createHump2Function(0d, 1d, 0.2d, 0d, 1d, 3d, 3d, 4d, 4d, 5d)
         };
 
         mols = mols.peek(mo -> {
@@ -159,32 +165,39 @@ public class PfizerCNSMPO2010Calc {
                                  NumberTransform[] transforms,
                                  Map<String, Integer> stats) {
 
-        // this does the calculations that are used to generate the MPO score
-        Double logp = (Double)calculators[0].processMolecule(mol, stats);
-        Double logd = (Double)calculators[1].processMolecule(mol, stats);
-        Double mw = (Double)calculators[2].processMolecule(mol, stats);
-        Double tpsa = (Double)calculators[3].processMolecule(mol, stats);
-        Integer hbd = (Integer)calculators[4].processMolecule(mol, stats);
-        Double bpka = (Double)calculators[5].processMolecule(mol, stats);
+//        ChemTermsCalculator.Calc.TPSA,
+//                ChemTermsCalculator.Calc.RotatableBondCount,
+//                ChemTermsCalculator.Calc.ElementCount,
+//                ChemTermsCalculator.Calc.ElementCount,
+//                ChemTermsCalculator.Calc.HBondDonorCount,
+//                ChemTermsCalculator.Calc.AromaticRingCount
 
-        if (logp == null || logd == null || mw == null || tpsa == null || hbd == null || bpka == null) {
-            LOG.info(String.format("Data missing. Inputs logp=%s logd=%s mw=%s tpsa=%s hbd=%s bpka=%s",
-                    logp, logd, mw, tpsa, hbd, bpka));
+        // this does the calculations that are used to generate the MPO score
+        Double tpsa = (Double)calculators[0].processMolecule(mol, stats);
+        Integer rotb = (Integer)calculators[1].processMolecule(mol, stats);
+        Integer n_count = (Integer)calculators[2].processMolecule(mol, stats);
+        Integer o_count = (Integer)calculators[3].processMolecule(mol, stats);
+        Integer hbd = (Integer)calculators[4].processMolecule(mol, stats);
+        Integer aro = (Integer)calculators[5].processMolecule(mol, stats);
+
+        if (tpsa == null || rotb == null || n_count == null || o_count == null || hbd == null || aro == null) {
+            LOG.info(String.format("Data missing. Inputs tpsa=%s rotb=%s n_count=%s o_count=%s hdb=%s aro=%s",
+                    tpsa, rotb, n_count, o_count, hbd, aro));
             return null;
         }
 
-        LOG.finer(String.format("Inputs are: logp=%s logd=%s mw=%s tpsa=%s hbd=%s bpka=%s",
-                logp, logd, mw, tpsa, hbd, bpka));
+        LOG.finer(String.format("Inputs are: tpsa=%s rotb=%s n_count=%s o_count=%s hdb=%s aro=%s",
+                tpsa, rotb, n_count, o_count, hbd, aro));
 
-        Double logp_score = transforms[0].transform(logp);
-        Double logd_score = transforms[1].transform(logd);
-        Double mw_score = transforms[2].transform(mw);
-        Double tpsa_score = transforms[3].transform(tpsa);
+        Double tpsa_score = transforms[0].transform(logp);
+        Double rotb_score = transforms[1].transform(logd);
+        Double n_count_score = transforms[2].transform(mw);
+        Double o_count_score = transforms[3].transform(tpsa);
         Double hbd_score = transforms[4].transform(hbd.doubleValue());
-        Double bpka_score = transforms[5].transform(bpka);
+        Double aro_score = transforms[5].transform(bpka);
 
         Double score_mpo = Utils.roundToSignificantFigures(
-                logp_score + logd_score + mw_score + tpsa_score + hbd_score + bpka_score, 4);
+                tpsa_score + rotb_score + n_count_score + o_count_score + hbd_score + aro_score, 4);
         return score_mpo;
     }
 

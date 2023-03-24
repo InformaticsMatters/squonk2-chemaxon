@@ -40,6 +40,7 @@ public class ChemTermsCalculator {
         MolecularWeight("CXN_molecularWeight", "mass()", Double.class),
         MolecularFormula("CXN_molecularFormula", "formula()", String.class),
         AtomCount("CXN_atomCount", "atomCount()", Integer.class),
+        ElementCount("CXN_atomCount", "atomCount(''{0}'')", Integer.class, new Class[]{Integer.class}, new Object[]{1}),
         HeavyAtomCount("CXN_heavyAtomCount", "atomCount() - atomCount('1')", Double.class),
         BondCount("CXN_bondCount", "bondCount()", Integer.class),
         LogP("CXN_cLogP", "logP()", Double.class),
