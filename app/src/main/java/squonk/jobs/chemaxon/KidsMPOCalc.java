@@ -62,7 +62,7 @@ public class KidsMPOCalc {
         } else {
             CommandLineParser parser = new DefaultParser();
             CommandLine cmd = parser.parse(options, args);
-            StringBuilder builder = new StringBuilder(PfizerCNSMPO2010Calc.class.getName());
+            StringBuilder builder = new StringBuilder(PfizerCNSMPOCalc.class.getName());
             for (String arg : args) {
                 builder.append(" ").append(arg);
             }

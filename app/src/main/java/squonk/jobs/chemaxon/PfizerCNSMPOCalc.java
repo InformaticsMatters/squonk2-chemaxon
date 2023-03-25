@@ -32,9 +32,9 @@ import java.util.stream.Stream;
  * Calculates CNS MPO score
  * See Wager et al. DOI: 10.1021/cn100008c
  */
-public class PfizerCNSMPO2010Calc {
+public class PfizerCNSMPOCalc {
 
-    private static final Logger LOG = Logger.getLogger(PfizerCNSMPO2010Calc.class.getName());
+    private static final Logger LOG = Logger.getLogger(PfizerCNSMPOCalc.class.getName());
     private static final DMLogger DMLOG = new DMLogger();
 
     public static final String SCORE_FIELD = "PFIZER_CNS_MPO_2010";
@@ -63,7 +63,7 @@ public class PfizerCNSMPO2010Calc {
         } else {
             CommandLineParser parser = new DefaultParser();
             CommandLine cmd = parser.parse(options, args);
-            StringBuilder builder = new StringBuilder(PfizerCNSMPO2010Calc.class.getName());
+            StringBuilder builder = new StringBuilder(PfizerCNSMPOCalc.class.getName());
             for (String arg : args) {
                 builder.append(" ").append(arg);
             }
@@ -81,7 +81,7 @@ public class PfizerCNSMPO2010Calc {
             }
             boolean header = Boolean.valueOf(cmd.getOptionValue("header", "true"));
 
-            PfizerCNSMPO2010Calc calc = new PfizerCNSMPO2010Calc();
+            PfizerCNSMPOCalc calc = new PfizerCNSMPOCalc();
             calc.calculate(inputFile, outputFile, header, filterMode, minValue, maxValue);
         }
     }
