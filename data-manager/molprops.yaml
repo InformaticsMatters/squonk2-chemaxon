@@ -721,6 +721,7 @@ jobs:
     - chemaxon
     - properties
     - bbb
+    - mps
     image:
       name: informaticsmatters/squonk2-chemaxon
       tag: latest
@@ -830,5 +831,247 @@ jobs:
           exitCode: 0
           outputs:
           - name: foo/abbvie_mps.sdf
+            checks:
+            - exists: true
+
+  chemaxon-pfizer-cns-mpo:
+    name: Pfizer CNS MPO
+    description: >-
+      Pfizer CNS multiparametric score prediction using ChemAxon tools.
+    version: '1.0.0'
+    category: molecular properties
+    keywords:
+    - chemaxon
+    - properties
+    - cns
+    - mpo
+    image:
+      name: informaticsmatters/squonk2-chemaxon
+      tag: latest
+      project-directory: /data
+      working-directory: /data
+      fix-permissions: true
+      file:
+      - name: /usr/local/license.cxl
+        content-from:
+          account-server-asset:
+            name: chemaxon-license-file
+      environment:
+      - name: CHEMAXON_LICENSE_URL
+        value-from:
+          constant:
+            value: /usr/local/license.cxl
+    # The container has no entrypoint so this is the command that is executed.
+    # The CLASSPATH environment variable in the container is set.
+    command: >-
+      java squonk.jobs.chemaxon.PfizerCNSMPOCalc
+      --input '{{ inputFile }}'
+      --output '{{ outputFile }}'
+      {% if header is defined %}--header {{ header }}{% endif %}
+      {% if mode is defined %}--mode {{ mode }}{% endif %}
+      {% if minValue is defined %}--min-value {{ minValue }}{% endif %}
+      {% if maxValue is defined %}--max-value {{ maxValue }}{% endif %}
+    variables:
+      order:
+        options:
+        - outputFile
+        - header
+        - mode
+        - minValue
+        - maxValue
+      inputs:
+        type: object
+        required:
+        - inputFile
+        properties:
+          inputFile:
+            title: Input molecules
+            mime-types:
+            - chemical/x-mdl-sdfile
+            - squonk/x-smiles
+            - text/csv
+            type: file
+      outputs:
+        type: object
+        properties:
+          results:
+            title: Output file name
+            mime-types:
+            - chemical/x-mdl-sdfile
+            creates: '{{ outputFile }}'
+            type: file
+            annotation-properties:
+              fields-descriptor:
+                origin: squonk2-job
+                description: Pfizer CNS MPO prediction
+                fields:
+                  Pfizer_CNS_MPO:
+                    type: number
+                    description: Pfizer CNS MPO prediction
+                    required: false
+                    active: true
+              derived-from: inputFile
+      options:
+        type: object
+        required:
+        - outputFile
+        - ph
+        properties:
+          outputFile:
+            title: Output file (.sdf or .smi)
+            type: string
+            default: output-pfizer-cns-mpo.sdf
+            pattern: "^[A-Za-z0-9_/\\.\\-]+$"
+          header:
+            title: Include header for .smi output
+            type: boolean
+            default: true
+          mode:
+            title: Filter mode
+            type: string
+            default: none
+            enum:
+            - pass
+            - fail
+          minValue:
+            title: Min value
+            type: number
+          maxValue:
+            title: Max value
+            type: number
+    tests:
+      simple-execution:
+        inputs:
+          inputFile: data/dhfr_3d-10.sdf
+        options:
+          outputFile: foo/cns_mpo.sdf
+          mode: pass
+          minValue: 4
+          maxValue: 8
+        checks:
+          exitCode: 0
+          outputs:
+          - name: foo/cns_mpo.sdf
+            checks:
+            - exists: true
+
+  chemaxon-kids-mpo:
+    name: KIDS MPO
+    description: >-
+      KIDS multiparametric score prediction for kinase drugs using ChemAxon tools.
+    version: '1.0.0'
+    category: molecular properties
+    keywords:
+    - chemaxon
+    - properties
+    - kinase
+    - mpo
+    image:
+      name: informaticsmatters/squonk2-chemaxon
+      tag: latest
+      project-directory: /data
+      working-directory: /data
+      fix-permissions: true
+      file:
+      - name: /usr/local/license.cxl
+        content-from:
+          account-server-asset:
+            name: chemaxon-license-file
+      environment:
+      - name: CHEMAXON_LICENSE_URL
+        value-from:
+          constant:
+            value: /usr/local/license.cxl
+    # The container has no entrypoint so this is the command that is executed.
+    # The CLASSPATH environment variable in the container is set.
+    command: >-
+      java squonk.jobs.chemaxon.KidsMPOCalc
+      --input '{{ inputFile }}'
+      --output '{{ outputFile }}'
+      {% if header is defined %}--header {{ header }}{% endif %}
+      {% if mode is defined %}--mode {{ mode }}{% endif %}
+      {% if minValue is defined %}--min-value {{ minValue }}{% endif %}
+      {% if maxValue is defined %}--max-value {{ maxValue }}{% endif %}
+    variables:
+      order:
+        options:
+        - outputFile
+        - header
+        - mode
+        - minValue
+        - maxValue
+      inputs:
+        type: object
+        required:
+        - inputFile
+        properties:
+          inputFile:
+            title: Input molecules
+            mime-types:
+            - chemical/x-mdl-sdfile
+            - squonk/x-smiles
+            - text/csv
+            type: file
+      outputs:
+        type: object
+        properties:
+          results:
+            title: Output file name
+            mime-types:
+            - chemical/x-mdl-sdfile
+            creates: '{{ outputFile }}'
+            type: file
+            annotation-properties:
+              fields-descriptor:
+                origin: squonk2-job
+                description: KIDS MPO prediction
+                fields:
+                  KIDS_MPO:
+                    type: number
+                    description: KIDS MPO prediction
+                    required: false
+                    active: true
+              derived-from: inputFile
+      options:
+        type: object
+        required:
+        - outputFile
+        - ph
+        properties:
+          outputFile:
+            title: Output file (.sdf or .smi)
+            type: string
+            default: output-kids-mpo.sdf
+            pattern: "^[A-Za-z0-9_/\\.\\-]+$"
+          header:
+            title: Include header for .smi output
+            type: boolean
+            default: true
+          mode:
+            title: Filter mode
+            type: string
+            default: none
+            enum:
+            - pass
+            - fail
+          minValue:
+            title: Min value
+            type: number
+          maxValue:
+            title: Max value
+            type: number
+    tests:
+      simple-execution:
+        inputs:
+          inputFile: data/dhfr_3d-10.sdf
+        options:
+          outputFile: foo/kids_mpo.sdf
+          mode: pass
+          minValue: 4
+          maxValue: 8
+        checks:
+          exitCode: 0
+          outputs:
+          - name: foo/kids_mpo.sdf
             checks:
             - exists: true

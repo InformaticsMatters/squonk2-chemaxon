@@ -37,7 +37,7 @@ public class PfizerCNSMPOCalc {
     private static final Logger LOG = Logger.getLogger(PfizerCNSMPOCalc.class.getName());
     private static final DMLogger DMLOG = new DMLogger();
 
-    public static final String SCORE_FIELD = "PFIZER_CNS_MPO_2010";
+    public static final String SCORE_FIELD = "Pfizer_CNS_MPO";
 
     public static void main(String[] args) throws Exception {
 
