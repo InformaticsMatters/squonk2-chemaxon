@@ -189,12 +189,12 @@ public class KidsMPOCalc {
         LOG.finer(String.format("Inputs are: tpsa=%s rotb=%s n_count=%s o_count=%s hdb=%s aro=%s",
                 tpsa, rotb, n_count, o_count, hbd, aro));
 
-        Double tpsa_score = transforms[0].transform(logp);
-        Double rotb_score = transforms[1].transform(logd);
-        Double n_count_score = transforms[2].transform(mw);
-        Double o_count_score = transforms[3].transform(tpsa);
+        Double tpsa_score = transforms[0].transform(tpsa.doubleValue());
+        Double rotb_score = transforms[1].transform(rotb.doubleValue());
+        Double n_count_score = transforms[2].transform(n_count.doubleValue());
+        Double o_count_score = transforms[3].transform(o_count.doubleValue());
         Double hbd_score = transforms[4].transform(hbd.doubleValue());
-        Double aro_score = transforms[5].transform(bpka);
+        Double aro_score = transforms[5].transform(aro.doubleValue());
 
         Double score_mpo = Utils.roundToSignificantFigures(
                 tpsa_score + rotb_score + n_count_score + o_count_score + hbd_score + aro_score, 4);

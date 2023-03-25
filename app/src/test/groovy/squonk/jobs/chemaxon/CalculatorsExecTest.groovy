@@ -40,7 +40,7 @@ class CalculatorsExecTest extends Specification {
 
         when:
         exec.calculate(mo, calculators, null, stats)
-        //println("Props found = " + mo.getProperties().size())
+        println("Props found = " + mo.getProperties().size())
 
         then:
         mo.getProperties().size() == calculators.length
