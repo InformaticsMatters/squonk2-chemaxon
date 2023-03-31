@@ -965,6 +965,7 @@ jobs:
     - chemaxon
     - properties
     - kinase
+    - kids
     - mpo
     image:
       name: informaticsmatters/squonk2-chemaxon
