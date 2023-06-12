@@ -13,7 +13,7 @@ When using delimited text files the molecules are read and written as SMILES.
 
 ## Implementation details
 
-* Job implementation: [GuptaBBBCalc.java](java/squonk/jobs/chemaxon/GuptaBBBCalc.java)
+* Job implementation: [GuptaBBBCalc.java](/app/src/main/java/squonk/jobs/chemaxon/GuptaBBBCalc.java)
 * Job definition: `jobs.chemaxon-gupta-bbb` in [molprops.yaml](/data-manager/molprops.yaml)
 
 ## How to run the job

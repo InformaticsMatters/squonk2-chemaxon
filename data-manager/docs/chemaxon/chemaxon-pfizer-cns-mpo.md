@@ -27,7 +27,7 @@ When using delimited text files the molecules are read and written as SMILES.
 
 ## Implementation details
 
-* Job implementation: [PfizerCNSMPOCalc.java](java/squonk/jobs/chemaxon/PfizerCNSMPOCalc.java)
+* Job implementation: [PfizerCNSMPOCalc.java](/app/src/main/java/squonk/jobs/chemaxon/PfizerCNSMPOCalc.java)
 * Job definition: `jobs.chemaxon-pfizer-cns-mpo` in [molprops.yaml](/data-manager/molprops.yaml)
 
 ## How to run the job

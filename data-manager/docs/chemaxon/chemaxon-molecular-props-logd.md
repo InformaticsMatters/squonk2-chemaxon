@@ -12,7 +12,7 @@ When using delimited text files the molecules are read and written as SMILES.
 
 ## Implementation details
 
-* Job implementation: [LogDCalc.java](java/squonk/jobs/chemaxon/LogDCalc.java)
+* Job implementation: [LogDCalc.java](/app/src/main/java/squonk/jobs/chemaxon/LogDCalc.java)
 * Job definition: `jobs.chemaxon-molecular-props-logd` in [molprops.yaml](/data-manager/molprops.yaml)
 
 ## How to run the job

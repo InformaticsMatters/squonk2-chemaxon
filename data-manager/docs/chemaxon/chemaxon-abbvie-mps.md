@@ -20,7 +20,7 @@ When using delimited text files the molecules are read and written as SMILES.
 
 ## Implementation details
 
-* Job implementation: [AbbvieMPSCalc.java](java/squonk/jobs/chemaxon/AbbvieMPSCalc.java)
+* Job implementation: [AbbvieMPSCalc.java](/app/src/main/java/squonk/jobs/chemaxon/AbbvieMPSCalc.java)
 * Job definition: `jobs.chemaxon-abbvie-mps` in [molprops.yaml](/data-manager/molprops.yaml)
 
 ## How to run the job

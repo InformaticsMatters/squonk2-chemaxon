@@ -12,7 +12,7 @@ When using delimited text files the molecules are read and written as SMILES.
 
 ## Implementation details
 
-* Job implementation: [PKaCalc.java](java/squonk/jobs/chemaxon/PKaCalc.java)
+* Job implementation: [PKaCalc.java](/app/src/main/java/squonk/jobs/chemaxon/PKaCalc.java)
 * Job definition: `jobs.chemaxon-molecular-props-pka` in [molprops.yaml](/data-manager/molprops.yaml)
 
 ## How to run the job

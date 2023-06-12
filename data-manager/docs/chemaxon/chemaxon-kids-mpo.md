@@ -22,7 +22,7 @@ When using delimited text files the molecules are read and written as SMILES.
 
 ## Implementation details
 
-* Job implementation: [KidsMPOCalc.java](java/squonk/jobs/chemaxon/KidsMPOCalc.java)
+* Job implementation: [KidsMPOCalc.java](/app/src/main/java/squonk/jobs/chemaxon/KidsMPOCalc.java)
 * Job definition: `jobs.chemaxon-kids-mpo` in [molprops.yaml](/data-manager/molprops.yaml)
 
 ## How to run the job

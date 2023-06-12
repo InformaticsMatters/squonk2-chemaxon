@@ -32,7 +32,7 @@ When using delimited text files the molecules are read and written as SMILES.
 
 ## Implementation details
 
-* Job implementation: [SimpleCalcs.java](java/squonk/jobs/chemaxon/SimpleCalcs.java)
+* Job implementation: [SimpleCalcs.java](/app/src/main/java/squonk/jobs/chemaxon/SimpleCalcs.java)
 * Job definition: `jobs.chemaxon-molecular-props-simple` in [molprops.yaml](/data-manager/molprops.yaml)
 
 ## How to run the job
