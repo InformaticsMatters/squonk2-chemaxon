@@ -80,7 +80,11 @@ public class MoleculeObject {
     }
 
     public Object getProperty(String name) {
-        return mol.properties().get(name).getPropValue();
+        if (mol.properties().get(name) != null) {
+            return mol.properties().get(name).getPropValue();
+        } else {
+            return null;
+        }
     }
 
     public <T> T getProperty(String name, Class<T> type) {

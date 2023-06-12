@@ -37,25 +37,37 @@ public class Filters {
             if (minValue != null && maxValue != null) { // both min and max values
                 mols = mols.filter(mo -> {
                     Number value = (Number) (mo.getProperty(fieldName));
-                    boolean b =  (value != null &&
-                            value.doubleValue() >= minValue.doubleValue() &&
-                            value.doubleValue() <= maxValue.doubleValue());
-                    LOG.finest("Value (pass, min,max): " + value + " " + b);
-                    return b;
+                    if (value == null) {
+                        return false;
+                    } else {
+                        boolean b = (value != null &&
+                                value.doubleValue() >= minValue.doubleValue() &&
+                                value.doubleValue() <= maxValue.doubleValue());
+                        LOG.finest("Value (pass, min,max): " + value + " " + b);
+                        return b;
+                    }
                 });
             } else if (minValue != null) { // only a min value
                 mols = mols.filter(mo -> {
                     Number value = (Number) (mo.getProperty(fieldName));
-                    boolean b =  (value != null && value.doubleValue() >= minValue.doubleValue());
-                    LOG.finest("Value (pass, min: " + value + " " + b);
-                    return b;
+                    if (value == null) {
+                        return false;
+                    } else {
+                        boolean b = (value != null && value.doubleValue() >= minValue.doubleValue());
+                        LOG.finest("Value (pass, min: " + value + " " + b);
+                        return b;
+                    }
                 });
             } else if (maxValue != null) { // only a max value
                 mols = mols.filter(mo -> {
                     Number value = (Number) (mo.getProperty(fieldName));
-                    boolean b =  (value != null && value.doubleValue() <= maxValue.doubleValue());
-                    LOG.finest("Value (pass, max): " + value + " " + b);
-                    return b;
+                    if (value == null) {
+                        return false;
+                    } else {
+                        boolean b = (value != null && value.doubleValue() <= maxValue.doubleValue());
+                        LOG.finest("Value (pass, max): " + value + " " + b);
+                        return b;
+                    }
                 });
             }
         } else if (mode == FilterMode.fail) {
@@ -63,25 +75,37 @@ public class Filters {
             if (minValue != null && maxValue != null) { // both min and max values
                 mols = mols.filter(mo -> {
                     Number value = (Number) mo.getProperty(fieldName);
-                    boolean b = (value == null ||
-                            value.doubleValue() < minValue.doubleValue() ||
-                            value.doubleValue() > maxValue.doubleValue());
-                    LOG.finest("Value (fail, min,max): " + value + " " + b);
-                    return b;
+                    if (value == null) {
+                        return false;
+                    } else {
+                        boolean b = (value == null ||
+                                value.doubleValue() < minValue.doubleValue() ||
+                                value.doubleValue() > maxValue.doubleValue());
+                        LOG.finest("Value (fail, min,max): " + value + " " + b);
+                        return b;
+                    }
                 });
             } else if (minValue != null) { // only a min value
                 mols = mols.filter(mo -> {
                     Number value = (Number) mo.getProperty(fieldName);
-                    boolean b = (value == null || value.doubleValue() < minValue.doubleValue());
-                    LOG.finest("Value (fail, min): " + value + " " + b);
-                    return b;
+                    if (value == null) {
+                        return false;
+                    } else {
+                        boolean b = (value == null || value.doubleValue() < minValue.doubleValue());
+                        LOG.finest("Value (fail, min): " + value + " " + b);
+                        return b;
+                    }
                 });
             } else if (maxValue != null) { // only a max value
                 mols = mols.filter(mo -> {
                     Number value = (Number) mo.getProperty(fieldName);
-                    boolean b = (value == null || value.doubleValue() > maxValue.doubleValue());
-                    LOG.finest("Value (fail, min): " + value + " " + b);
-                    return b;
+                    if (value == null) {
+                        return false;
+                    } else {
+                        boolean b = (value == null || value.doubleValue() > maxValue.doubleValue());
+                        LOG.finest("Value (fail, min): " + value + " " + b);
+                        return b;
+                    }
                 });
             }
         }
