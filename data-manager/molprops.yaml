@@ -720,7 +720,6 @@ jobs:
     keywords:
     - chemaxon
     - properties
-    - bbb
     - mps
     image:
       name: informaticsmatters/squonk2-chemaxon
