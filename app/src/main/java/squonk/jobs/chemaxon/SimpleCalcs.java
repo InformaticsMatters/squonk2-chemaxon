@@ -61,6 +61,8 @@ public class SimpleCalcs {
         options.addOption(null, "aromaticAtomCount", false, "Calculate aromatic atom count");
         options.addOption(null, "rotatableBondCount", false, "Calculate rotatable bond count");
         options.addOption(null, "tpsa", false, "Calculate topological polar surface area");
+        options.addOption(null, "acidic-pka", false, "Calculate most acidic pKa");
+        options.addOption(null, "basic-pka", false, "Calculate most basic pKa");
 
         options.addOption(Option.builder("h").longOpt("header").hasArg().argName("true/false")
                 .desc("Include header line when writing SMILES").type(Boolean.class).build());
@@ -147,6 +149,12 @@ public class SimpleCalcs {
             }
             if (cmd.hasOption("tpsa")) {
                 calcs.add(ChemTermsCalculator.Calc.TPSA);
+            }
+            if (cmd.hasOption("acidic-pka")) {
+                calcs.add(ChemTermsCalculator.Calc.AcidicPKa);
+            }
+            if (cmd.hasOption("basic-pka")) {
+                calcs.add(ChemTermsCalculator.Calc.BasicPKa);
             }
 //            if (cmd.hasOption("")) {
 //                calcs.add(ChemTermsCalculator.Calc.);

@@ -23,7 +23,9 @@ jobs:
     - hbd
     - hba
     - h-bond
+    - hbond
     - tpsa
+    - pka
     image:
       name: informaticsmatters/squonk2-chemaxon
       tag: latest
@@ -64,6 +66,8 @@ jobs:
       {% if aromaticAtomCount is defined and aromaticAtomCount %}--aromaticAtomCount{% endif %}
       {% if rotatableBondCount is defined and rotatableBondCount %}--rotatableBondCount{% endif %}
       {% if tpsa is defined and tpsa %}--tpsa{% endif %}
+      {% if apka is defined and apka %}--acidic-pka{% endif %}
+      {% if bpka is defined and bpka %}--basic-pka{% endif %}
     variables:
       order:
         options:
@@ -86,6 +90,8 @@ jobs:
         - aromaticAtomCount
         - rotatableBondCount
         - tpsa
+        - apka
+        - bpka
       inputs:
         type: object
         required:
@@ -197,6 +203,16 @@ jobs:
                     description: Topological polar surface area
                     required: false
                     active: true
+                  CXN_aPKa:
+                    type: number
+                    description: Most acidic pKa
+                    required: false
+                    active: true
+                  CXN_bPKa:
+                    type: number
+                    description: Most basic pKa
+                    required: false
+                    active: true
               service-execution:
                 service_ref: 'https://discourse.squonk.it/t/job-cdk-molecular-descriptors/126'
               derived-from: inputFile
@@ -282,6 +298,14 @@ jobs:
             title: Calculate topological polar surface area
             type: boolean
             default: true
+          apka:
+            title: Calculate most acidic pKa
+            type: boolean
+            default: true
+          bpka:
+            title: Calculate most basic pKa
+            type: boolean
+            default: true
     tests:
       simple-execution:
         inputs:
@@ -305,6 +329,8 @@ jobs:
           aromaticAtomCount: true
           rotatableBondCount: true
           tpsa: true
+          apka: true
+          bpka: true
         checks:
           exitCode: 0
           outputs:
