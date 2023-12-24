@@ -445,6 +445,7 @@ jobs:
             type: string
             default: none
             enum:
+            - none
             - pass
             - fail
           minValue:
@@ -712,6 +713,7 @@ jobs:
             type: string
             default: none
             enum:
+            - none
             - pass
             - fail
           minValue:
@@ -833,6 +835,7 @@ jobs:
             type: string
             default: none
             enum:
+            - none
             - pass
             - fail
           minValue:
@@ -953,6 +956,7 @@ jobs:
             type: string
             default: none
             enum:
+            - none
             - pass
             - fail
           minValue:
@@ -1074,6 +1078,7 @@ jobs:
             type: string
             default: none
             enum:
+            - none
             - pass
             - fail
           minValue:

@@ -17,6 +17,18 @@ class PfizerCNSMPOCalcTest extends Specification {
         count == 10
     }
 
+    def "smi mps null filter"() {
+
+        setup:
+        def calc = new PfizerCNSMPOCalc()
+
+        when:
+        def count = calc.calculate("../data/10.smi", null, false, null, null, null)
+
+        then:
+        count == 10
+    }
+
     def "smi mps min and max filters"() {
 
         setup:
