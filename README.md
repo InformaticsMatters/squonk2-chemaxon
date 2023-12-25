@@ -17,3 +17,5 @@ See [here](https://informaticsmatters.gitlab.io/squonk2-account-server/2-0/asset
 for more details.
 
 See the notes in the [Dockerfile](Dockerfile) about running the Jote tests.
+
+This project must be built using Java 11.

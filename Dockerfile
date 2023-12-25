@@ -8,6 +8,8 @@ FROM informaticsmatters/squonk2-chemaxon:latest
 # Build this image like this place a valid license file at license.cxl at the root of this repo, then run:
 #   docker build -t informaticsmatters/squonk2-chemaxon:license .
 # then replace the "tag: latest" bit in molprops.yaml with "tag: license"
+#
+# Afterwards remember to change the tags back to latest!
 
 # NOTE: THIS IS AN INTERIM MEASURE.
 
