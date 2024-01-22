@@ -27,12 +27,14 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
-
-import squonk.jobs.chemaxon.SimpleCalcs;
-import squonk.jobs.chemaxon.util.DMLogger;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.stream.StreamSupport;
 
 public class MoleculeUtils {
 
@@ -65,11 +67,70 @@ public class MoleculeUtils {
         return h.getMolecule();
     }
 
+    /** Generate a Stream of MoleculeObjects.
+     * The logic is quite complex so that it can handle bad molecules gracefully.
+     * If a bad molecule is encountered the MoleculeObject returned from the Stream is null.
+     *
+     * @param path
+     * @return
+     * @throws IOException
+     */
     public static Stream<MoleculeObject> readMoleculesAsStream(String path) throws IOException {
         File file = new File(path);
         MolImporter importer = new MolImporter(file);
-        Stream<Molecule> mols = importer.getMolStream();
-        return mols.map(m -> new MoleculeObject(m));
+        final AtomicInteger count = new AtomicInteger(0);
+
+        Iterator<MoleculeObject> iter = new Iterator<>() {
+
+            Molecule currentMol = null;
+            final Molecule errorMol = new Molecule();
+
+            private Molecule readNextMol() {
+                count.incrementAndGet();
+                try {
+                    return importer.read();
+                } catch (IOException ioe) {
+                    String msg = "Failed to read molecule " + count.get();
+                    DMLOG.logEvent(DMLogger.Level.WARNING, msg + " " + ioe.getMessage());
+                    LOG.log(Level.WARNING, msg, ioe);
+                    return errorMol;
+                }
+            }
+
+            @Override
+            public boolean hasNext() {
+                if (currentMol != null) {
+                    return true;
+                } else {
+                    currentMol = readNextMol();
+                    return currentMol != null;
+                }
+            }
+
+            @Override
+            public MoleculeObject next() {
+                Molecule theMol = null;
+                if (currentMol != null) {
+                    theMol = currentMol;
+                    currentMol = null;
+                } else {
+                    theMol = readNextMol();
+                }
+
+                if (theMol == null) {
+                    return null;
+                } else if (theMol == errorMol) {
+                    return null;
+                } else {
+                    return new MoleculeObject(theMol);
+                }
+            }
+        };
+
+        Spliterator<MoleculeObject> spliterator = Spliterators.spliteratorUnknownSize(iter, Spliterator.IMMUTABLE);
+        Stream<MoleculeObject> mols = StreamSupport.stream(spliterator, false);
+
+        return mols;
     }
 
     public static Stream<MoleculeObject> addFileWriter(Stream<MoleculeObject> mols, String outputFile, boolean includeHeader)
@@ -100,11 +161,13 @@ public class MoleculeUtils {
         final MolExporter exporter = new MolExporter(outputFile, opts);
         final AtomicInteger i = new AtomicInteger(0);
         Stream<MoleculeObject> str = mols.peek(mo -> {
-            try {
-                i.incrementAndGet();
-                exporter.write(mo.getMol());
-            } catch (IOException e) {
-                DMLOG.logEvent(DMLogger.Level.WARNING, "Failed to export molecule " + i);
+            if (mo != null) {
+                try {
+                    i.incrementAndGet();
+                    exporter.write(mo.getMol());
+                } catch (IOException e) {
+                    DMLOG.logEvent(DMLogger.Level.WARNING, "Failed to export molecule " + i);
+                }
             }
         }).onClose(() -> {
             try {

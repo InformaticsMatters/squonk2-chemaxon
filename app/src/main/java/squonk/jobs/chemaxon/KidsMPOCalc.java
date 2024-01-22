@@ -85,19 +85,12 @@ public class KidsMPOCalc {
         }
     }
 
-    public long calculate(String inputFile, String outputFile, boolean includeHeader, FilterMode mode,
+    public int[] calculate(String inputFile, String outputFile, boolean includeHeader, FilterMode mode,
                           Float minValue, Float maxValue) throws IOException {
         // read mols as stream
         Stream<MoleculeObject> mols = MoleculeUtils.readMoleculesAsStream(inputFile);
         final CalculatorsExec exec = new CalculatorsExec();
         final Map<String, Integer> stats = new HashMap<>();
-
-//        .tpsa()
-//                .rotatableBondCount()
-//                .atomCount("7", "AtomCount_N_CXN")
-//                .atomCount("8", "AtomCount_O_CXN")
-//                .donorCount()
-//                .aromaticRingCount()
 
         final ChemTermsCalculator[] calculators = exec.createCalculators(
                 new ChemTermsCalculator.Calc[]{
@@ -126,11 +119,16 @@ public class KidsMPOCalc {
                 MpoFunctions.createHump2Function(0d, 1d, 0.2d, 0d, 1d, 3d, 3d, 4d, 4d, 5d)
         };
 
+        AtomicInteger errorCount = new AtomicInteger(0);
         mols = mols.peek(mo -> {
-            Molecule mol = mo.getMol();
-            Double score = doCalculate(mol, calculators, transforms, stats);
-            if (score != null) {
-                mo.setProperty(SCORE_FIELD, score);
+            if (mo == null) {
+                errorCount.incrementAndGet();
+            } else {
+                Molecule mol = mo.getMol();
+                Double score = doCalculate(mol, calculators, transforms, stats);
+                if (score != null) {
+                    mo.setProperty(SCORE_FIELD, score);
+                }
             }
         });
 
@@ -151,7 +149,7 @@ public class KidsMPOCalc {
         long count = mols.count();
         DMLOG.logEvent(DMLogger.Level.INFO, "Processed " + total + " molecules, " + count + " passed filters");
         DMLOG.logCost((float) total.get(), false);
-        return count;
+        return new int[] {(int)count, errorCount.get()};
     }
 
     /**

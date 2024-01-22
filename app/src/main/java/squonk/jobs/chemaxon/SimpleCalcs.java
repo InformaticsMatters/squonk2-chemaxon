@@ -164,7 +164,15 @@ public class SimpleCalcs {
         }
     }
 
-    public long calculate(ChemTermsCalculator.Calc calcs[], String inputFile, String outputFile, boolean includeHeader) throws Exception {
+    /**
+     * @param calcs
+     * @param inputFile
+     * @param outputFile
+     * @param includeHeader
+     * @return int array of length 2. Fist value is the number of inputs, the second the number of errors
+     * @throws Exception
+     */
+    public int[] calculate(ChemTermsCalculator.Calc calcs[], String inputFile, String outputFile, boolean includeHeader) throws Exception {
 
         // read mols as stream
         Stream<MoleculeObject> mols = MoleculeUtils.readMoleculesAsStream(inputFile);
@@ -181,6 +189,6 @@ public class SimpleCalcs {
         long count = str.count();
         DMLOG.logEvent(DMLogger.Level.INFO, "Processed " + count + " molecules");
         DMLOG.logCost((float)count, false);
-        return count;
+        return new int[] {(int)count, exec.getErrorCount()};
     }
 }

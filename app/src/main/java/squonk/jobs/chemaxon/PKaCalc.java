@@ -123,7 +123,7 @@ public class PKaCalc {
         }
     }
 
-    public long calculate(String inputFile, String outputFile, boolean includeHeader, boolean acidic, boolean basic, int numStrengths)
+    public int[] calculate(String inputFile, String outputFile, boolean includeHeader, boolean acidic, boolean basic, int numStrengths)
             throws IOException {
 
         if (numStrengths < 1 || numStrengths > 5) {
@@ -132,9 +132,13 @@ public class PKaCalc {
 
         // read mols as stream
         Stream<MoleculeObject> mols = MoleculeUtils.readMoleculesAsStream(inputFile);
-
+        final AtomicInteger errorCount = new AtomicInteger(0);
         mols = mols.peek(mo -> {
-            calcPka(mo, acidic, basic, numStrengths);
+            if (mo == null) {
+                errorCount.incrementAndGet();
+            } else {
+                calcPka(mo, acidic, basic, numStrengths);
+            }
         });
 
         // we need to count the actual molecules calculated as the final number may be filtered
@@ -150,7 +154,7 @@ public class PKaCalc {
         long count = mols.count();
         DMLOG.logEvent(DMLogger.Level.INFO, "Processed " + count + " molecules");
         DMLOG.logCost((float) count, false);
-        return count;
+        return new int[] {(int)count, errorCount.get()};
     }
 
 

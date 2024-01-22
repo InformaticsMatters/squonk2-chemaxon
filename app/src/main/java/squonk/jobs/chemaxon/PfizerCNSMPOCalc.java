@@ -86,7 +86,7 @@ public class PfizerCNSMPOCalc {
         }
     }
 
-    public long calculate(String inputFile, String outputFile, boolean includeHeader, FilterMode mode,
+    public int[] calculate(String inputFile, String outputFile, boolean includeHeader, FilterMode mode,
                           Float minValue, Float maxValue) throws IOException {
         // read mols as stream
         Stream<MoleculeObject> mols = MoleculeUtils.readMoleculesAsStream(inputFile);
@@ -120,18 +120,28 @@ public class PfizerCNSMPOCalc {
                 MpoFunctions.createRampFunction(1d, 0d, 8d, 10d)
         };
 
+        AtomicInteger errorCount = new AtomicInteger(0);
+
         mols = mols.peek(mo -> {
-            Molecule mol = mo.getMol();
-            Double score = doCalculate(mol, calculators, transforms, stats);
-            if (score != null) {
-                mo.setProperty(SCORE_FIELD, score);
+            if (mo == null) {
+                errorCount.incrementAndGet();
+            } else {
+                Molecule mol = mo.getMol();
+                Double score = doCalculate(mol, calculators, transforms, stats);
+                if (score != null) {
+                    mo.setProperty(SCORE_FIELD, score);
+                }
             }
         });
 
 
         // we need to count the actual molecules calculated as the final number may be filtered
         final AtomicInteger total = new AtomicInteger(0);
-        mols = mols.peek(mo -> total.incrementAndGet());
+        mols = mols.peek(m -> {
+            if (m != null) {
+                total.incrementAndGet();
+            }
+        });
 
         // apply the filters
         mols = Filters.applyFilters(mols, mode, SCORE_FIELD, minValue, maxValue);
@@ -145,7 +155,7 @@ public class PfizerCNSMPOCalc {
         long count = mols.count();
         DMLOG.logEvent(DMLogger.Level.INFO, "Processed " + total + " molecules, " + count + " passed filters");
         DMLOG.logCost((float) total.get(), false);
-        return count;
+        return new int[] {(int)count, (int)errorCount.get()};
     }
 
     /**

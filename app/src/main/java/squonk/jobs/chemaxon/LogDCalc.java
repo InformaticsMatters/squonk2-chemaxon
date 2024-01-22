@@ -81,7 +81,7 @@ public class LogDCalc {
         }
     }
 
-    public long calculate(String inputFile, String outputFile, boolean includeHeader, Float ph,
+    public int[] calculate(String inputFile, String outputFile, boolean includeHeader, Float ph,
                           FilterMode filterMode, Float minValue, Float maxValue) throws IOException {
         // read mols as stream
         Stream<MoleculeObject> mols = MoleculeUtils.readMoleculesAsStream(inputFile);
@@ -111,6 +111,6 @@ public class LogDCalc {
         long count = mols.count();
         DMLOG.logEvent(DMLogger.Level.INFO, "Processed " + total + " molecules, " + count + " passed filters");
         DMLOG.logCost((float) total.get(), false);
-        return count;
+        return new int[] {(int)count, exec.getErrorCount()};
     }
 }

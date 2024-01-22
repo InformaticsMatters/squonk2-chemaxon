@@ -87,7 +87,7 @@ public class AbbvieMPSCalc {
         }
     }
 
-    public long calculate(String inputFile, String outputFile, boolean includeHeader, FilterMode mode,
+    public int[] calculate(String inputFile, String outputFile, boolean includeHeader, FilterMode mode,
                           Float minValue, Float maxValue) throws IOException {
         // read mols as stream
         Stream<MoleculeObject> mols = MoleculeUtils.readMoleculesAsStream(inputFile);
@@ -106,12 +106,16 @@ public class AbbvieMPSCalc {
                         new Object[] {7.4f}
                 }
         );
-
+        AtomicInteger errorCount = new AtomicInteger(0);
         mols = mols.peek(mo -> {
-            Molecule mol = mo.getMol();
-            Double score = doCalculate(mol, calculators, stats);
-            if (score != null) {
-                mo.setProperty(SCORE_FIELD, score);
+            if (mo == null) {
+                errorCount.incrementAndGet();
+            } else {
+                Molecule mol = mo.getMol();
+                Double score = doCalculate(mol, calculators, stats);
+                if (score != null) {
+                    mo.setProperty(SCORE_FIELD, score);
+                }
             }
         });
 
@@ -132,7 +136,7 @@ public class AbbvieMPSCalc {
         long count = mols.count();
         DMLOG.logEvent(DMLogger.Level.INFO, "Processed " + total + " molecules, " + count + " passed filters");
         DMLOG.logCost((float) total.get(), false);
-        return count;
+        return new int[] {(int)count, errorCount.get()};
     }
 
     /**

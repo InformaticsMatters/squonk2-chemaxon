@@ -21,6 +21,7 @@ import squonk.jobs.chemaxon.util.MoleculeObject;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
@@ -28,6 +29,11 @@ import java.util.stream.Stream;
 public class CalculatorsExec {
 
     private static final Logger LOG = Logger.getLogger(CalculatorsExec.class.getName());
+    private final AtomicInteger errorCount = new AtomicInteger(0);
+
+    public int getErrorCount() {
+        return errorCount.get();
+    }
 
     public ChemTermsCalculator[] createCalculators(ChemTermsCalculator.Calc[] calcs, Object[][] params) {
         String[] propNames = new String[calcs.length];
@@ -51,11 +57,16 @@ public class CalculatorsExec {
     }
 
     protected void doCalculate(MoleculeObject mo, ChemTermsCalculator[] calculators, Map<String, Integer> stats) {
-        for (ChemTermsCalculator calculator : calculators) {
-            try {
-                calculator.processMoleculeObject(mo, stats);
-            } catch (IOException e) {
-                LOG.log(Level.INFO, "Failed to calculate " + calculator.getChemTermsExpr(), e);
+        if (mo == null) {
+            errorCount.incrementAndGet();
+        } else {
+            // if null then a bad molecule was encountered
+            for (ChemTermsCalculator calculator : calculators) {
+                try {
+                    calculator.processMoleculeObject(mo, stats);
+                } catch (IOException e) {
+                    LOG.log(Level.INFO, "Failed to calculate " + calculator.getChemTermsExpr(), e);
+                }
             }
         }
     }

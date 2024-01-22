@@ -11,10 +11,24 @@ class PfizerCNSMPOCalcTest extends Specification {
         def calc = new PfizerCNSMPOCalc()
 
         when:
-        def count = calc.calculate("../data/10.smi", null, false, FilterMode.none, null, null)
+        def counts = calc.calculate("../data/10.smi", null, false, FilterMode.none, null, null)
 
         then:
-        count == 10
+        counts[0] == 10
+        counts[1] == 0
+    }
+
+    def "smi mps no filter bad"() {
+
+        setup:
+        def calc = new PfizerCNSMPOCalc()
+
+        when:
+        def counts = calc.calculate("../data/bad.smi", null, false, FilterMode.none, null, null)
+
+        then:
+        counts[0] == 10
+        counts[1] == 2
     }
 
     def "smi mps null filter"() {
@@ -23,10 +37,11 @@ class PfizerCNSMPOCalcTest extends Specification {
         def calc = new PfizerCNSMPOCalc()
 
         when:
-        def count = calc.calculate("../data/10.smi", null, false, null, null, null)
+        def counts = calc.calculate("../data/10.smi", null, false, null, null, null)
 
         then:
-        count == 10
+        counts[0] == 10
+        counts[1] == 0
     }
 
     def "smi mps min and max filters"() {
@@ -35,10 +50,11 @@ class PfizerCNSMPOCalcTest extends Specification {
         def calc = new PfizerCNSMPOCalc()
 
         when:
-        def count = calc.calculate("../data/10.smi", null, false, FilterMode.pass, 1f, 5f)
+        def counts = calc.calculate("../data/10.smi", null, false, FilterMode.pass, 1f, 5f)
 
         then:
-        count == 4
+        counts[0] == 4
+        counts[1] == 0
     }
 
     def "sdf mps no filter"() {
@@ -47,10 +63,11 @@ class PfizerCNSMPOCalcTest extends Specification {
         def calc = new PfizerCNSMPOCalc()
 
         when:
-        def count = calc.calculate("../data/dhfr_3d-10.sdf", null, false, FilterMode.none, null, null)
+        def counts = calc.calculate("../data/dhfr_3d-10.sdf", null, false, FilterMode.none, null, null)
 
         then:
-        count == 10
+        counts[0] == 10
+        counts[1] == 0
     }
 
     def "sdf mps min filter"() {
@@ -59,10 +76,11 @@ class PfizerCNSMPOCalcTest extends Specification {
         def calc = new PfizerCNSMPOCalc()
 
         when:
-        def count = calc.calculate("../data/dhfr_3d-10.sdf", null, false, FilterMode.pass, 5.0f, null)
+        def counts = calc.calculate("../data/dhfr_3d-10.sdf", null, false, FilterMode.pass, 5.0f, null)
 
         then:
-        count == 4
+        counts[0] == 4
+        counts[1] == 0
     }
 
     def "sdf mps max filter"() {
@@ -71,10 +89,11 @@ class PfizerCNSMPOCalcTest extends Specification {
         def calc = new PfizerCNSMPOCalc()
 
         when:
-        def count = calc.calculate("../data/dhfr_3d-10.sdf",null, false, FilterMode.pass, null, 4.0f)
+        def counts = calc.calculate("../data/dhfr_3d-10.sdf",null, false, FilterMode.pass, null, 4.0f)
 
         then:
-        count == 5
+        counts[0] == 5
+        counts[1] == 0
     }
 
     def "sdf mps min and max filters"() {
@@ -83,9 +102,10 @@ class PfizerCNSMPOCalcTest extends Specification {
         def calc = new PfizerCNSMPOCalc()
 
         when:
-        def count = calc.calculate("../data/dhfr_3d-10.sdf", null, false, FilterMode.pass, 5.0f, 8.0f)
+        def counts = calc.calculate("../data/dhfr_3d-10.sdf", null, false, FilterMode.pass, 5.0f, 8.0f)
 
         then:
-        count == 4
+        counts[0] == 4
+        counts[1] == 0
     }
 }

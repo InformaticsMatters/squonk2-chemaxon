@@ -11,10 +11,24 @@ class GuptaBBBCalcTest extends Specification {
         def calc = new GuptaBBBCalc()
 
         when:
-        def count = calc.calculate("../data/10.smi", null, false, FilterMode.none, null, null)
+        def counts = calc.calculate("../data/10.smi", null, false, FilterMode.none, null, null)
 
         then:
-        count == 10
+        counts[0] == 10
+        counts[1] == 0
+    }
+
+    def "smi bbb no filter bad"() {
+
+        setup:
+        def calc = new GuptaBBBCalc()
+
+        when:
+        def counts = calc.calculate("../data/bad.smi", null, false, FilterMode.none, null, null)
+
+        then:
+        counts[0] == 10
+        counts[1] == 2
     }
 
     def "sdf bbb no filter"() {
@@ -23,10 +37,11 @@ class GuptaBBBCalcTest extends Specification {
         def calc = new GuptaBBBCalc()
 
         when:
-        def count = calc.calculate("../data/dhfr_3d-10.sdf", null, false, FilterMode.none, null, null)
+        def counts = calc.calculate("../data/dhfr_3d-10.sdf", null, false, FilterMode.none, null, null)
 
         then:
-        count == 10
+        counts[0] == 10
+        counts[1] == 0
     }
 
     def "sdf bbb min filter"() {
@@ -35,11 +50,11 @@ class GuptaBBBCalcTest extends Specification {
         def calc = new GuptaBBBCalc()
 
         when:
-        def count = calc.calculate("../data/dhfr_3d-10.sdf", null, false, FilterMode.pass, 3.0f, null)
+        def counts = calc.calculate("../data/dhfr_3d-10.sdf", null, false, FilterMode.pass, 3.0f, null)
 
         then:
-        count > 0
-        count < 10
+        counts[0] == 9
+        counts[1] == 0
     }
 
     def "sdf bbb max filter"() {
@@ -48,11 +63,11 @@ class GuptaBBBCalcTest extends Specification {
         def calc = new GuptaBBBCalc()
 
         when:
-        def count = calc.calculate("../data/dhfr_3d-10.sdf",null, false, FilterMode.pass, null, 4.0f)
+        def counts = calc.calculate("../data/dhfr_3d-10.sdf",null, false, FilterMode.pass, null, 4.0f)
 
         then:
-        count > 0
-        count < 10
+        counts[0] == 6
+        counts[1] == 0
     }
 
     def "sdf bbb min and max filters"() {
@@ -61,10 +76,10 @@ class GuptaBBBCalcTest extends Specification {
         def calc = new GuptaBBBCalc()
 
         when:
-        def count = calc.calculate("../data/dhfr_3d-10.sdf", null, false, FilterMode.pass, 2.0f, 4.0f)
+        def counts = calc.calculate("../data/dhfr_3d-10.sdf", null, false, FilterMode.pass, 2.0f, 4.0f)
 
         then:
-        count > 0
-        count < 10
+        counts[0] == 5
+        counts[1] == 0
     }
 }
