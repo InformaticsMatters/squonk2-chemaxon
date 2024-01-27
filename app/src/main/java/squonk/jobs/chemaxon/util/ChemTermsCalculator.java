@@ -58,6 +58,10 @@ public class ChemTermsCalculator {
         AcidicPKa("CXN_aPKa", "acidicpKa(''{0}'')", Double.class, new Class[]{Integer.class}, new Object[]{1}),
         BasicPKa("CXN_bPKa", "basicpKa(''{0}'')", Double.class, new Class[]{Integer.class}, new Object[]{1}),
         TPSA("CXN_tpsa", "topologicalPolarSurfaceArea()", Double.class),
+        FSP3("CXN_fsp3", "fsp3()", Double.class),
+        INCHIS("CXN_inchis", "molString('inchi')", String.class),
+        INCHIK("CXN_inchik", "molString('inchikey')", String.class),
+        CHIRALC("CXN_chiral_centers", "chiralCenterCount()", Integer.class),
 //        ("CXN_", "()", .class),
 
         ;

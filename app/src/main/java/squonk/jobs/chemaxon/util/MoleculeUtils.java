@@ -23,7 +23,9 @@ import chemaxon.struc.Molecule;
 import chemaxon.util.MolHandler;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -157,10 +159,20 @@ public class MoleculeUtils {
 //        if (outputFile.endsWith(".gz")) {
 //            opts = "gzip:" + opts;
 //        }
-        LOG.info("Options: " + opts);
-        final MolExporter exporter = new MolExporter(outputFile, opts);
+
+        OutputStream out = new FileOutputStream(outputFile);
+
+        return addFileWriter(mols, out, opts, includeHeader);
+    }
+
+    public static Stream<MoleculeObject> addFileWriter(
+            Stream<MoleculeObject> mols, OutputStream output, String options, boolean includeHeader)
+            throws IOException {
+
+        LOG.info("Options: " + options);
+        final MolExporter exporter = new MolExporter(output, options);
         final AtomicInteger i = new AtomicInteger(0);
-        Stream<MoleculeObject> str = mols.peek(mo -> {
+        Stream<MoleculeObject> stream = mols.peek(mo -> {
             if (mo != null) {
                 try {
                     i.incrementAndGet();
@@ -177,6 +189,6 @@ public class MoleculeUtils {
             }
         });
 
-        return str;
+        return stream;
     }
 }

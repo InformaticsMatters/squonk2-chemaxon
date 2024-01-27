@@ -39,6 +39,15 @@ public class PfizerCNSMPOCalc {
 
     public static final String SCORE_FIELD = "Pfizer_CNS_MPO";
 
+    private static final NumberTransform[] transforms = new NumberTransform[]{
+            MpoFunctions.createRampFunction(1d, 0d, 3d, 5d),
+            MpoFunctions.createRampFunction(1d, 0d, 2d, 4d),
+            MpoFunctions.createRampFunction(1d, 0d, 360d, 500d),
+            MpoFunctions.createHump1Function(0d, 1d, 0d, 20d, 40d, 90d, 120d),
+            MpoFunctions.createRampFunction(1d, 0d, 0.5d, 3.5d),
+            MpoFunctions.createRampFunction(1d, 0d, 8d, 10d)
+    };
+
     public static void main(String[] args) throws Exception {
 
         Options options = new Options();
@@ -87,7 +96,7 @@ public class PfizerCNSMPOCalc {
     }
 
     public int[] calculate(String inputFile, String outputFile, boolean includeHeader, FilterMode mode,
-                          Float minValue, Float maxValue) throws IOException {
+                           Float minValue, Float maxValue) throws IOException {
         // read mols as stream
         Stream<MoleculeObject> mols = MoleculeUtils.readMoleculesAsStream(inputFile);
         final CalculatorsExec exec = new CalculatorsExec();
@@ -104,21 +113,12 @@ public class PfizerCNSMPOCalc {
                 },
                 new Object[][]{
                         null,
-                        new Object[] {7.4f},
+                        new Object[]{7.4f},
                         null,
                         null,
                         null,
                         null
                 });
-
-        NumberTransform[] transforms = new NumberTransform[]{
-                MpoFunctions.createRampFunction(1d, 0d, 3d, 5d),
-                MpoFunctions.createRampFunction(1d, 0d, 2d, 4d),
-                MpoFunctions.createRampFunction(1d, 0d, 360d, 500d),
-                MpoFunctions.createHump1Function(0d, 1d, 0d, 20d, 40d, 90d, 120d),
-                MpoFunctions.createRampFunction(1d, 0d, 0.5d, 3.5d),
-                MpoFunctions.createRampFunction(1d, 0d, 8d, 10d)
-        };
 
         AtomicInteger errorCount = new AtomicInteger(0);
 
@@ -127,7 +127,7 @@ public class PfizerCNSMPOCalc {
                 errorCount.incrementAndGet();
             } else {
                 Molecule mol = mo.getMol();
-                Double score = doCalculate(mol, calculators, transforms, stats);
+                Double score = doCalculate(mol, calculators, stats);
                 if (score != null) {
                     mo.setProperty(SCORE_FIELD, score);
                 }
@@ -155,36 +155,43 @@ public class PfizerCNSMPOCalc {
         long count = mols.count();
         DMLOG.logEvent(DMLogger.Level.INFO, "Processed " + total + " molecules, " + count + " passed filters");
         DMLOG.logCost((float) total.get(), false);
-        return new int[] {(int)count, (int)errorCount.get()};
+        return new int[]{(int) count, (int) errorCount.get()};
     }
 
     /**
      * Performs the CNS MPO calculation
+     *
      * @param mol
      * @param calculators
      * @param stats
      * @return
      */
     protected Double doCalculate(Molecule mol, ChemTermsCalculator[] calculators,
-                                 NumberTransform[] transforms,
                                  Map<String, Integer> stats) {
 
         // this does the calculations that are used to generate the MPO score
-        Double logp = (Double)calculators[0].processMolecule(mol, stats);
-        Double logd = (Double)calculators[1].processMolecule(mol, stats);
-        Double mw = (Double)calculators[2].processMolecule(mol, stats);
-        Double tpsa = (Double)calculators[3].processMolecule(mol, stats);
-        Integer hbd = (Integer)calculators[4].processMolecule(mol, stats);
-        Double bpka = (Double)calculators[5].processMolecule(mol, stats);
+        Double logp = (Double) calculators[0].processMolecule(mol, stats);
+        Double logd = (Double) calculators[1].processMolecule(mol, stats);
+        Double mw = (Double) calculators[2].processMolecule(mol, stats);
+        Double tpsa = (Double) calculators[3].processMolecule(mol, stats);
+        Integer hbd = (Integer) calculators[4].processMolecule(mol, stats);
+        Double bpka = (Double) calculators[5].processMolecule(mol, stats);
+
+
+        return calculateScore(logp, logd, mw, tpsa, hbd, bpka);
+
+    }
+
+    protected static Double calculateScore(Double logp, Double logd, Double mw, Double tpsa, Integer hbd, Double bpka) {
+
+        LOG.finer(String.format("Inputs are: logp=%s logd=%s mw=%s tpsa=%s hbd=%s bpka=%s",
+                logp, logd, mw, tpsa, hbd, bpka));
 
         if (logp == null || logd == null || mw == null || tpsa == null || hbd == null || bpka == null) {
             LOG.info(String.format("Data missing. Inputs logp=%s logd=%s mw=%s tpsa=%s hbd=%s bpka=%s",
                     logp, logd, mw, tpsa, hbd, bpka));
             return null;
         }
-
-        LOG.finer(String.format("Inputs are: logp=%s logd=%s mw=%s tpsa=%s hbd=%s bpka=%s",
-                logp, logd, mw, tpsa, hbd, bpka));
 
         Double logp_score = transforms[0].transform(logp);
         Double logd_score = transforms[1].transform(logd);
@@ -195,6 +202,7 @@ public class PfizerCNSMPOCalc {
 
         Double score_mpo = Utils.roundToSignificantFigures(
                 logp_score + logd_score + mw_score + tpsa_score + hbd_score + bpka_score, 4);
+
         return score_mpo;
     }
 

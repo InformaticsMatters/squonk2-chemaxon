@@ -43,10 +43,10 @@ public class PKaCalc {
 
     private static final DecimalFormat df = new DecimalFormat("0.0");
 
-    private static final double DEFAULT_TEMPERATURE = 298d;
-    private static final double DEFAULT_MIN_BASIC_VALUE = -2d;
-    private static final double DEFAULT_MIN_ACIDIC_VALUE = 16d;
-    private static final int DEFAULT_MAX_IONS = 6;
+    protected static final double DEFAULT_TEMPERATURE = 298d;
+    protected static final double DEFAULT_MIN_BASIC_VALUE = -2d;
+    protected static final double DEFAULT_MIN_ACIDIC_VALUE = 16d;
+    protected static final int DEFAULT_MAX_IONS = 6;
 
     private final pKaPlugin plugin;
 
