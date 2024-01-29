@@ -118,7 +118,7 @@ public class SygCalcs {
         final PKaCalc pka = new PKaCalc();
 
         // read mols as stream
-        Stream<MoleculeObject> mols = MoleculeUtils.readMoleculesAsStream(inputFile);
+        Stream<MoleculeObject> mols = MoleculeUtils.readMoleculesAsStream(inputFile, "csv:headless");
         CalculatorsExec exec = new CalculatorsExec();
         Map<String, Integer> stats = new HashMap<>();
 
@@ -133,6 +133,9 @@ public class SygCalcs {
 
         // make sure we consume the stream
         long count = stream.count();
+        if (output != null) {
+            output.close();
+        }
         DMLOG.logEvent(DMLogger.Level.INFO, "Processed " + count + " molecules");
         DMLOG.logCost((float) count, false);
         return new int[]{(int) count, exec.getErrorCount()};
@@ -166,17 +169,6 @@ public class SygCalcs {
 
         @Override
         public void accept(MoleculeObject mo) {
-
-//            Object o = mo.getProperty(ChemTermsCalculator.Calc.INCHIK.getSymbol());
-////            Object o = mo.getProperty("CXN_BPKA1");
-//            if (o != null) {
-//                System.out.println("CLASS: " + o.getClass().getName() + " " + o);
-//            } else {
-//                System.out.println("null");
-//            }
-
-//            String name = mo.getMol().getName();
-//            System.out.println("NAME: " + name);
 
             Double cnsmpo = PfizerCNSMPOCalc.calculateScore(
                     (Double)mo.getProperty(ChemTermsCalculator.Calc.LogP.getSymbol()),

@@ -69,6 +69,10 @@ public class MoleculeUtils {
         return h.getMolecule();
     }
 
+    public static Stream<MoleculeObject> readMoleculesAsStream(String path) throws IOException {
+        return readMoleculesAsStream(path, null);
+    }
+
     /** Generate a Stream of MoleculeObjects.
      * The logic is quite complex so that it can handle bad molecules gracefully.
      * If a bad molecule is encountered the MoleculeObject returned from the Stream is null.
@@ -77,9 +81,9 @@ public class MoleculeUtils {
      * @return
      * @throws IOException
      */
-    public static Stream<MoleculeObject> readMoleculesAsStream(String path) throws IOException {
+    public static Stream<MoleculeObject> readMoleculesAsStream(String path, String opts) throws IOException {
         File file = new File(path);
-        MolImporter importer = new MolImporter(file);
+        MolImporter importer = new MolImporter(file, opts);
         final AtomicInteger count = new AtomicInteger(0);
 
         Iterator<MoleculeObject> iter = new Iterator<>() {
