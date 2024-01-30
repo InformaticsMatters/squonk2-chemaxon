@@ -12,6 +12,9 @@ FROM informaticsmatters/squonk2-chemaxon:latest
 # Afterwards remember to change the tags back to latest!
 
 # NOTE: THIS IS AN INTERIM MEASURE.
+#
+# Note: ensure the right docker env is being used. e.g.
+#   export DOCKER_HOST=unix:///var/run/docker.sock
 
 COPY license.cxl /license.cxl
 ENV CHEMAXON_LICENSE_URL=/license.cxl

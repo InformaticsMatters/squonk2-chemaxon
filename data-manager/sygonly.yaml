@@ -1,0 +1,159 @@
+---
+# Tools using the Chemistry Development Kit
+kind: DataManagerJobDefinition
+kind-version: '2021.1'
+name: ChemAxon molecular properties
+collection: chemaxon
+
+jobs:
+  dotmatics-calcprops:
+    name: Dotmatics calcprops
+    description: >-
+      Calculate Dotmatics properties using ChemAxon tools
+    version: '1.0.0'
+    category: molecular properties
+    keywords:
+    - chemaxon
+    - properties
+    - ringcount
+    - logp
+    - logd
+    - fsp3
+    - cns
+    - mpo
+    - chiralcentres
+    - tpsa
+    - pka
+    image:
+      name: informaticsmatters/squonk2-chemaxon
+      tag: latest
+      project-directory: /data
+      working-directory: /data
+      fix-permissions: true
+      file:
+      - name: /usr/local/license.cxl
+        content-from:
+          account-server-asset:
+            name: chemaxon-license-file
+      environment:
+      - name: CHEMAXON_LICENSE_URL
+        value-from:
+          constant:
+            value: /usr/local/license.cxl
+    # The container has no entrypoint so this is the command that is executed.
+    # The CLASSPATH environment variable in the container is set.
+    command: >-
+      java squonk.jobs.chemaxon.SygCalcs
+      --input '{{ inputFile }}'
+      --output '{{ outputFile }}'
+    variables:
+      order:
+        options:
+        - outputFile
+      inputs:
+        type: object
+        required:
+        - inputFile
+        properties:
+          inputFile:
+            title: Input molecules
+            mime-types:
+            - text/csv
+      outputs:
+        type: object
+        properties:
+          results:
+            title: Output file name
+            mime-types:
+            - text/csv
+            creates: '{{ outputFile }}'
+            type: file
+            annotation-properties:
+              fields-descriptor:
+                origin: squonk2-job
+                description: Dotmatics calcprops
+                fields:
+                  Identifier:
+                    type: string
+                    description: Identifier
+                    required: false
+                    active: true
+                  LogP:
+                    type: number
+                    description: Molecular formula
+                    required: false
+                    active: true
+                  LogD7.4:
+                    type: number
+                    description: LogD at pH 7.4
+                    required: false
+                    active: true
+                  CNS_MPO:
+                    type: number
+                    description: Pfizer CNS MPO
+                    required: false
+                    active: true
+                  Acidic_pKa_1:
+                    type: number
+                    description: 1st acidic pKa
+                    required: false
+                    active: true
+                  Acidic_pKa_2:
+                    type: number
+                    description: 2nd acidic pKa
+                    required: false
+                    active: true
+                  Basic_pKa_1:
+                    type: number
+                    description: 1st basic pKa
+                    required: false
+                    active: true
+                  Basic_pKa_2:
+                    type: number
+                    description: 2nd basic pKa
+                    required: false
+                    active: true
+                  Chiral_centers:
+                    type: integer
+                    description: Number of chiral centres
+                    required: false
+                    active: true
+                  Aromatic_rings:
+                    type: integer
+                    description: Number of aromatic rings
+                    required: false
+                    active: true
+                  fsp3:
+                    type: number
+                    description: Fraction of sp3 hybridised carbon atoms
+                    required: false
+                    active: true
+                  InChIKey:
+                    type: string
+                    description: InChI key
+                    required: false
+                    active: true
+              derived-from: inputFile
+      options:
+        type: object
+        required:
+        - outputFile
+        properties:
+          outputFile:
+            title: Output file (.csv)
+            type: string
+            default: dotmatics-properties.csv
+            pattern: "^[A-Za-z0-9_/\\.\\-]+\\.csv$"
+    tests:
+      simple-execution:
+        inputs:
+          inputFile: data/syg.csv
+        options:
+          outputFile: syg-calcs.csv
+        checks:
+          exitCode: 0
+          outputs:
+          - name: syg-calcs.csv
+            checks:
+            - exists: true
+            - lineCount: 11
