@@ -118,7 +118,7 @@ public class SygCalcs {
         final PKaCalc pka = new PKaCalc();
 
         // read mols as stream
-        Stream<MoleculeObject> mols = MoleculeUtils.readMoleculesAsStream(inputFile, "csv:headless");
+        Stream<MoleculeObject> mols = MoleculeUtils.readMoleculesAsStream(inputFile, "csv:fID,fMOL");
         CalculatorsExec exec = new CalculatorsExec();
         Map<String, Integer> stats = new HashMap<>();
 
@@ -150,7 +150,7 @@ public class SygCalcs {
         private final DecimalFormat df = new DecimalFormat("##.##");
 
         private static final String HEADER = "Identifier,LogP,LogD7.4,CNS_MPO,Acidic_pKa_1,Acidic_pKa_2,Basic_pKa_1,Basic_pKa_2," +
-                "Chiral_centers,Aromatic_rings,fsp3,VAL11,VAL12,VAL13,VAL14,VAL15,InChIKey" +
+                "Chiral_centers,Aromatic_rings,fsp3,VAL11,VAL12,VAL13,VAL14,VAL15,InChIKey," +
                 "TEXT2,TEXT3,TEXT4,TEXT5\n";
 
         Reporter(Writer out) {
@@ -184,8 +184,11 @@ public class SygCalcs {
             Object inchik_orig = mo.getProperty(ChemTermsCalculator.Calc.INCHIK.getSymbol());
             String inchik = inchik_orig == null ? "" : inchik_orig.toString().substring(9);
 
+            Object o = mo.getMol().getPropertyObject("ID");
+            String id = o == null ? "" : o.toString();
+
             List<String> values = new ArrayList<>();
-            values.add(formatValue(mo.getMol().getName())); // identifier
+            values.add(formatValue(id)); // identifier
             values.add(formatValue(mo.getProperty(ChemTermsCalculator.Calc.LogP.getSymbol())));
             values.add(formatValue(mo.getProperty(ChemTermsCalculator.Calc.LogD.getSymbol())));
             values.add(formatValue(cnsmpo));
@@ -196,16 +199,16 @@ public class SygCalcs {
             values.add(formatValue(mo.getProperty(ChemTermsCalculator.Calc.CHIRALC.getSymbol())));
             values.add(formatValue(mo.getProperty(ChemTermsCalculator.Calc.AromaticRingCount.getSymbol())));
             values.add(formatValue(mo.getProperty(ChemTermsCalculator.Calc.FSP3.getSymbol())));
-            values.add(""); // VAL
-            values.add(""); // VAL
-            values.add(""); // VAL
-            values.add(""); // VAL
-            values.add(""); // VAL
+            values.add(""); // VAL1
+            values.add(""); // VAL2
+            values.add(""); // VAL3
+            values.add(""); // VAL4
+            values.add(""); // VAL5
             values.add(formatValue(inchik));
-            values.add(""); // TEXT
-            values.add(""); // TEXT
-            values.add(""); // TEXT
-            values.add(""); // TEXT
+            values.add(""); // TEXT2
+            values.add(""); // TEXT3
+            values.add(""); // TEXT4
+            values.add(""); // TEXT5
 
 
             String line = String.join(",", values);

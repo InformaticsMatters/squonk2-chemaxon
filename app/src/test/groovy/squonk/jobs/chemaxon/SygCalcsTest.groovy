@@ -11,7 +11,7 @@ class SygCalcsTest extends Specification {
         def w = new StringWriter()
 
         when:
-        def counts = sc.calculate("../data/10.csv", w)
+        def counts = sc.calculate("../data/syg.csv", w)
         def data = w.toString()
         println data
 
@@ -30,7 +30,7 @@ class SygCalcsTest extends Specification {
         def w = new FileWriter(f)
 
         when:
-        def counts = sc.calculate("../data/10.smi", w)
+        def counts = sc.calculate("../data/syg.csv", w)
 
         then:
         counts[0] == 10
