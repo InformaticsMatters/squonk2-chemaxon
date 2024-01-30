@@ -187,7 +187,7 @@ public class PfizerCNSMPOCalc {
         LOG.finer(String.format("Inputs are: logp=%s logd=%s mw=%s tpsa=%s hbd=%s bpka=%s",
                 logp, logd, mw, tpsa, hbd, bpka));
 
-        if (logp == null || logd == null || mw == null || tpsa == null || hbd == null || bpka == null) {
+        if (logp == null || logd == null || mw == null || tpsa == null || hbd == null) {
             LOG.info(String.format("Data missing. Inputs logp=%s logd=%s mw=%s tpsa=%s hbd=%s bpka=%s",
                     logp, logd, mw, tpsa, hbd, bpka));
             return null;
@@ -198,7 +198,8 @@ public class PfizerCNSMPOCalc {
         Double mw_score = transforms[2].transform(mw);
         Double tpsa_score = transforms[3].transform(tpsa);
         Double hbd_score = transforms[4].transform(hbd.doubleValue());
-        Double bpka_score = transforms[5].transform(bpka);
+        // if no pKa score then value of 1 should be used
+        Double bpka_score = (bpka == null ? 1d : transforms[5].transform(bpka));
 
         Double score_mpo = Utils.roundToSignificantFigures(
                 logp_score + logd_score + mw_score + tpsa_score + hbd_score + bpka_score, 4);
