@@ -69,6 +69,16 @@ public class MoleculeUtils {
         return h.getMolecule();
     }
 
+    public static String determineMolImporterOptions(String filename, boolean header) {
+        if (filename.endsWith(".sdf")) {
+            return "sdf";
+        } else if (filename.endsWith(".csv")) {
+            return header ? "csv:struc0" : "csv:headless,struc0";
+        } else {
+            return "smiles";
+        }
+    }
+
     public static Stream<MoleculeObject> readMoleculesAsStream(String path) throws IOException {
         return readMoleculesAsStream(path, null);
     }

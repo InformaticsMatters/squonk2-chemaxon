@@ -16,6 +16,9 @@
 
 package squonk.jobs.chemaxon;
 
+
+import chemaxon.struc.Molecule;
+//import chemaxon.struc.MPropContainer;
 import org.apache.commons.cli.*;
 import squonk.jobs.chemaxon.util.*;
 import squonk.jobs.chemaxon.util.Filters.FilterMode;
@@ -85,13 +88,15 @@ public class LogDCalc {
                           FilterMode filterMode, Float minValue, Float maxValue) throws IOException {
         // read mols as stream
         Stream<MoleculeObject> mols = MoleculeUtils.readMoleculesAsStream(inputFile);
-        CalculatorsExec exec = new CalculatorsExec();
-        Map<String, Integer> stats = new HashMap<>();
-        Object[] params = new Object[]{ph};
+        final CalculatorsExec exec = new CalculatorsExec();
+        final Map<String, Integer> stats = new HashMap<>();
+        final Object[] params = new Object[]{ph};
+        final String name = String.format("%s (pH %s)", ChemTermsCalculator.Calc.LogD.getSymbol(), ph);
 
         ChemTermsCalculator[] calculators = exec.createCalculators(
                 new ChemTermsCalculator.Calc[]{ChemTermsCalculator.Calc.LogD},
-                new Object[][]{params});
+                new Object[][]{params},
+                new String[] {name});
 
         mols = exec.calculate(mols, calculators, stats);
 
@@ -101,6 +106,17 @@ public class LogDCalc {
 
         // apply the filters
         mols = Filters.applyFilters(mols, filterMode, calculators[0].getPropName(), minValue, maxValue);
+
+        // reformat the results to 3 significant figures
+        mols = mols.peek(mo -> {
+            if (mo != null) {
+                Double value = mo.getProperty(name, Double.class);
+                if (value != null) {
+                    value = Utils.roundToSignificantFigures(value, 3);
+                    mo.setProperty(name, value);
+                }
+            }
+        });
 
         // if output is defined then set up a MolExporter to write the results
         if (outputFile != null) {

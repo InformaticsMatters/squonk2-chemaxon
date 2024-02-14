@@ -173,7 +173,10 @@ public class SimpleCalcs {
      * @throws Exception
      */
     public int[] calculate(ChemTermsCalculator.Calc calcs[], String inputFile, String outputFile, boolean includeHeader) throws Exception {
-
+//        String opts = null;
+//        if (inputFile.endsWith(".csv")) {
+//            opts = "csv:headless,struc0";
+//        }
         // read mols as stream
         Stream<MoleculeObject> mols = MoleculeUtils.readMoleculesAsStream(inputFile);
         CalculatorsExec exec = new CalculatorsExec();
