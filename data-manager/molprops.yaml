@@ -348,6 +348,7 @@ jobs:
     - chemaxon
     - properties
     - logd
+    - partitioning
     image:
       name: informaticsmatters/squonk2-chemaxon
       tag: latest
@@ -411,10 +412,11 @@ jobs:
                 description: ChemAxon logD calculator
                 fields:
                   CXN_logD:
+                    expression: 'CXN_logD (pH {{ ph }})'
                     type: number
                     description: >-
                       logD at pH {{ ph }}
-                    required: false
+                    required: true
                     active: true
               service-execution:
                 service_ref: 'https://discourse.squonk.it/t/job-cdk-molecular-descriptors/126'
