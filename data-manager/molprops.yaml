@@ -389,25 +389,7 @@ jobs:
         options:
         - outputFile
         - header
-        - molecularWeight
-        - molecularFormula
-        - atomCount
-        - heavyAtomCount
-        - bondCount
-        - logp
-        - logd
-        - hbdCount
-        - hbaCount
-        - hbdSites
-        - hbaSites
-        - ringCount
-        - ringAtomCount
-        - aromaticRingCount
-        - aromaticAtomCount
-        - rotatableBondCount
-        - tpsa
-        - apka
-        - bpka
+        - calculators
       inputs:
         type: object
         required:
