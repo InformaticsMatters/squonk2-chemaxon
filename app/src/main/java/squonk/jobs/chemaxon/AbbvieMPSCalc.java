@@ -32,13 +32,31 @@ import java.util.stream.Stream;
  * Calculates Abbvie MPS score.
  * Calculation is: abs(logD - 3) + num_aromatic_rings + num_rotatable_bonds
  */
-public class AbbvieMPSCalc {
+public class AbbvieMPSCalc implements Calculator {
+
+    final ChemTermsCalculator[] calculators;
 
     private static final Logger LOG = Logger.getLogger(AbbvieMPSCalc.class.getName());
     private static final DMLogger DMLOG = new DMLogger();
 
     public static final String SCORE_FIELD = "Abbvie_MPS";
 
+    public AbbvieMPSCalc() {
+        final CalculatorsExec exec = new CalculatorsExec();
+
+        this.calculators = exec.createCalculators(
+                new ChemTermsCalculator.Calc[]{
+                        ChemTermsCalculator.Calc.AromaticRingCount,
+                        ChemTermsCalculator.Calc.RotatableBondCount,
+                        ChemTermsCalculator.Calc.LogD
+                },
+                new Object[][]{
+                        null,
+                        null,
+                        new Object[] {7.4f}
+                }
+        );
+    }
 
     public static void main(String[] args) throws Exception {
 
@@ -91,34 +109,16 @@ public class AbbvieMPSCalc {
                           Float minValue, Float maxValue) throws IOException {
         // read mols as stream
         Stream<MoleculeObject> mols = MoleculeUtils.readMoleculesAsStream(inputFile);
-        final CalculatorsExec exec = new CalculatorsExec();
         final Map<String, Integer> stats = new HashMap<>();
 
-        final ChemTermsCalculator[] calculators = exec.createCalculators(
-                new ChemTermsCalculator.Calc[]{
-                        ChemTermsCalculator.Calc.AromaticRingCount,
-                        ChemTermsCalculator.Calc.RotatableBondCount,
-                        ChemTermsCalculator.Calc.LogD
-                },
-                new Object[][]{
-                        null,
-                        null,
-                        new Object[] {7.4f}
-                }
-        );
         AtomicInteger errorCount = new AtomicInteger(0);
         mols = mols.peek(mo -> {
             if (mo == null) {
                 errorCount.incrementAndGet();
             } else {
-                Molecule mol = mo.getMol();
-                Double score = doCalculate(mol, calculators, stats);
-                if (score != null) {
-                    mo.setProperty(SCORE_FIELD, score);
-                }
+                calculate(mo, stats);
             }
         });
-
 
         // we need to count the actual molecules calculated as the final number may be filtered
         final AtomicInteger total = new AtomicInteger(0);
@@ -141,12 +141,13 @@ public class AbbvieMPSCalc {
 
     /**
      * Performs the MPS calculation
-     * @param mol
-     * @param calculators
+     * @param mo
      * @param stats
      * @return
      */
-    protected Double doCalculate(Molecule mol, ChemTermsCalculator[] calculators, Map<String, Integer> stats) {
+    public Double calculate(MoleculeObject mo, Map<String, Integer> stats) {
+
+        Molecule mol = mo.getMol();
 
         // this does the calculations that are used to generate the BBB score
         Integer aro = (Integer)calculators[0].processMolecule(mol, stats);
@@ -164,6 +165,8 @@ public class AbbvieMPSCalc {
         double score = Utils.roundToSignificantFigures(Math.abs(logd - 3d) + (double)aro + (double)rot, 4);
 
         LOG.finer(String.format("Score is %s", score));
+
+        mo.setProperty(SCORE_FIELD, score);
 
         return score;
     }

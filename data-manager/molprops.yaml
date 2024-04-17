@@ -338,6 +338,253 @@ jobs:
             checks:
             - exists: true
 
+  chemaxon-molecular-multi-calc:
+    name: ChemAxon molecular properties
+    description: >-
+      Calculate molecular properties using ChemAxon tools.
+    version: '1.0.0'
+    category: molecular properties
+    keywords:
+    - chemaxon
+    - properties
+    - atomcount
+    - bondcount
+    - ringcount
+    - logp
+    - logd
+    - hbd
+    - hba
+    - h-bond
+    - hbond
+    - tpsa
+    - pka
+    - bbb
+    - mpo
+    image:
+      name: informaticsmatters/squonk2-chemaxon
+      tag: latest
+      project-directory: /data
+      working-directory: /data
+      fix-permissions: true
+      file:
+      - name: /usr/local/license.cxl
+        content-from:
+          account-server-asset:
+            name: chemaxon-license-file
+      environment:
+      - name: CHEMAXON_LICENSE_URL
+        value-from:
+          constant:
+            value: /usr/local/license.cxl
+    # The container has no entrypoint so this is the command that is executed.
+    # The CLASSPATH environment variable in the container is set.
+    command: >-
+      java squonk.jobs.chemaxon.MultiCalc
+      --input '{{ inputFile }}'
+      --output '{{ outputFile }}'
+      {% if header is defined and header %}--header {{ header }}{% endif %}
+      --calculators '{% for calc in calculators.split() %} {{ calc }}{% endfor %}'
+    variables:
+      order:
+        options:
+        - outputFile
+        - header
+        - molecularWeight
+        - molecularFormula
+        - atomCount
+        - heavyAtomCount
+        - bondCount
+        - logp
+        - logd
+        - hbdCount
+        - hbaCount
+        - hbdSites
+        - hbaSites
+        - ringCount
+        - ringAtomCount
+        - aromaticRingCount
+        - aromaticAtomCount
+        - rotatableBondCount
+        - tpsa
+        - apka
+        - bpka
+      inputs:
+        type: object
+        required:
+        - inputFile
+        properties:
+          inputFile:
+            title: Input molecules
+            mime-types:
+            - chemical/x-mdl-sdfile
+            - squonk/x-smiles
+            - text/csv
+            type: molecules-smi
+      outputs:
+        type: object
+        properties:
+          results:
+            title: Output file name
+            mime-types:
+            - chemical/x-mdl-sdfile
+            creates: '{{ outputFile }}'
+            type: file
+            annotation-properties:
+              fields-descriptor:
+                origin: squonk2-job
+                description: ChemAxon simple molecular properties
+                fields:
+                  CXN_molecularWeight:
+                    type: number
+                    description: Molecular weight
+                  CXN_molecularFormula:
+                    type: string
+                    description: Molecular formula
+                  CXN_atomCount:
+                    type: integer
+                    description: Atom count
+                  CXN_heavyAtomCount:
+                    type: number
+                    description: Heavy atom count
+                  CXN_bondCount:
+                    type: integer
+                    description: Bond count
+                  CXN_cLogp:
+                    type: number
+                    description: cLogP
+                  CXN_logD:
+                    type: number
+                    description: logD at pH 7.4
+                  CXN_donorCount:
+                    type: integer
+                    description: H-bond donor count
+                  CXN_acceptorCount:
+                    type: integer
+                    description: H-bond acceptor count
+                  CXN_donorSites:
+                    type: integer
+                    description: H-bond donor sites
+                  CXN_acceptorSites:
+                    type: integer
+                    description: H-bond acceptor sites
+                  CXN_ringCount:
+                    type: integer
+                    description: Ring count
+                  CXN_ringAtomCount:
+                    type: integer
+                    description: Ring atom count
+                  CXN_aromaticRingCount:
+                    type: integer
+                    description: Aromatic ring count
+                  CXN_aromaticAtomCount:
+                    type: integer
+                    description: Aromatic atom count
+                  CXN_rotatableBondCount:
+                    type: integer
+                    description: Rotatable bond count
+                  CXN_tpsa:
+                    type: number
+                    description: Topological polar surface area
+                  CXN_aPKa:
+                    type: number
+                    description: Most acidic pKa
+                  CXN_bPKa:
+                    type: number
+                    description: Most basic pKa
+                  Gupta_BBB:
+                    type: number
+                    description: Gupta BBB prediction
+                  Pfizer_CNS_MPO:
+                    type: number
+                    description: Pfizer CNS MPO prediction
+                  Abbvie_MPS:
+                    type: number
+                    description: Abbvie MPS prediction
+                  KIDS_MPO:
+                    type: number
+                    description: KIDS MPO prediction
+              derived-from: inputFile
+      options:
+        type: object
+        required:
+        - outputFile
+        - calculators
+        properties:
+          outputFile:
+            title: Output file (.sdf or .smi)
+            type: string
+            default: output-cxn-molprops.sdf
+            pattern: "^[A-Za-z0-9_/\\.\\-]+$"
+          header:
+            title: Include header for .smi output
+            type: boolean
+            default: true
+          calculators:
+            title: Calculators
+            type: array
+            items:
+              type: string
+              oneOf:
+              - const: abbvie-mps
+                title: Abbvie MPS score
+              - const: aromatic-atom-count
+                title: Aromatic atom count
+              - const: aromatic-ring-count
+                title: Aromatic ring count
+              - const: atom-count
+                title: Atom count
+              - const: bond-count
+                title: Bond count
+              - const: gupta-bbb
+                title: Gupta BBB score
+              - const: hba-count
+                title: H-bond acceptor count
+              - const: hba-sites
+                title: H-bond acceptor sites
+              - const: hbd-count
+                title: H-bond donor count
+              - const: hbd-sites
+                title: H-bond donor sites
+              - const: heavy-atom-count
+                title: Heavy atom count
+              - const: kids-mpo
+                title: KIDS MPO score
+              - const: logp
+                title: logP
+              - const: logd
+                title: logD @ pH7.4
+              - const: molecular-formula
+                title: Mol formula
+              - const: molecular-weight
+                title: Mol weight
+              - const: pfizer-cns-mpo
+                title: Pfizer CNS MPO score
+              - const: acidic-pka
+                title: pKa (acidic)
+              - const: basic-pka
+                title: pKa (basic)
+              - const: ring-count
+                title: Ring count
+              - const: ring-atom-count
+                title: Ring atom count
+              - const: rotatable-bond-count
+                title: Rotatable bond count
+              - const: tpsa
+                title: Topological polar surface area
+    tests:
+      simple-execution:
+        inputs:
+          inputFile: data/dhfr_3d-10.sdf
+        options:
+          outputFile: foo/cxn-predictions.sdf
+          calculators: molecular-weight molecular-formula atom-count heavy-atom-count bond-count logp logd hba-count hbd-count hba-sites hbd-sites ring-count ring-atom-count aromatic-ring-count aromatic-atom-count rotatable-bond-count tpsa acidic-pka basic-pka gupta-bbb pfizer-cns-mpo abbvie-mps kids-mpo
+        checks:
+          exitCode: 0
+          outputs:
+          - name: foo/cxn-predictions.sdf
+            checks:
+            - exists: true
+
   chemaxon-molecular-props-logd:
     name: ChemAxon logD calculator
     description: >-

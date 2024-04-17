@@ -22,8 +22,9 @@ import chemaxon.jep.context.MolContext;
 import chemaxon.nfunk.jep.ParseException;
 import chemaxon.struc.Molecule;
 
-import java.io.IOException;
+
 import java.text.MessageFormat;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -31,7 +32,7 @@ import java.util.logging.Logger;
 /**
  * @author timbo
  */
-public class ChemTermsCalculator {
+public class ChemTermsCalculator implements Calculator {
 
     private static final Logger LOG = Logger.getLogger(ChemTermsCalculator.class.getName());
 
@@ -188,12 +189,11 @@ public class ChemTermsCalculator {
      * Evaluate the chemical terms expression and set the result to the MoleculeObject that is returned
      * @param mo
      * @param stats
-     * @return
-     * @throws IOException
      */
-    public MoleculeObject processMoleculeObject(MoleculeObject mo, Map<String, Integer> stats) throws IOException {
+    @Override
+    public Object calculate(MoleculeObject mo, Map<String, Integer> stats) {
         if (mo == null || mo.getMol() == null) {
-            return mo;
+            return null;
         }
 
         Molecule mol = mo.getMol();
@@ -202,7 +202,7 @@ public class ChemTermsCalculator {
         if (result != null) {
             mo.setProperty(propName, result);
         }
-        return mo;
+        return result;
     }
 
     /**

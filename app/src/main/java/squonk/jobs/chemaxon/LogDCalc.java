@@ -16,9 +16,7 @@
 
 package squonk.jobs.chemaxon;
 
-
 import chemaxon.struc.Molecule;
-//import chemaxon.struc.MPropContainer;
 import org.apache.commons.cli.*;
 import squonk.jobs.chemaxon.util.*;
 import squonk.jobs.chemaxon.util.Filters.FilterMode;
@@ -30,10 +28,25 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
-public class LogDCalc {
+public class LogDCalc implements Calculator {
 
     private static final Logger LOG = Logger.getLogger(LogDCalc.class.getName());
     private static final DMLogger DMLOG = new DMLogger();
+
+    private final ChemTermsCalculator calculator;
+    private final String name;
+
+    public LogDCalc(Float ph) {
+        final CalculatorsExec exec = new CalculatorsExec();
+
+        final Object[] params = new Object[]{ph};
+        this.name = String.format("%s (pH %s)", ChemTermsCalculator.Calc.LogD.getSymbol(), ph);
+
+        this.calculator = exec.createCalculators(
+                new ChemTermsCalculator.Calc[]{ChemTermsCalculator.Calc.LogD},
+                new Object[][]{params},
+                new String[] {name})[0];
+    }
 
     public static void main(String[] args) throws Exception {
 
@@ -79,44 +92,34 @@ public class LogDCalc {
             }
             boolean header = Boolean.valueOf(cmd.getOptionValue("header", "true"));
 
-            LogDCalc calc = new LogDCalc();
-            calc.calculate(inputFile, outputFile, header, ph, filterMode, minValue, maxValue);
+            LogDCalc calc = new LogDCalc(ph);
+            calc.calculate(inputFile, outputFile, header, filterMode, minValue, maxValue);
         }
     }
 
-    public int[] calculate(String inputFile, String outputFile, boolean includeHeader, Float ph,
+    public int[] calculate(String inputFile, String outputFile, boolean includeHeader,
                           FilterMode filterMode, Float minValue, Float maxValue) throws IOException {
         // read mols as stream
         Stream<MoleculeObject> mols = MoleculeUtils.readMoleculesAsStream(inputFile);
-        final CalculatorsExec exec = new CalculatorsExec();
+
         final Map<String, Integer> stats = new HashMap<>();
-        final Object[] params = new Object[]{ph};
-        final String name = String.format("%s (pH %s)", ChemTermsCalculator.Calc.LogD.getSymbol(), ph);
 
-        ChemTermsCalculator[] calculators = exec.createCalculators(
-                new ChemTermsCalculator.Calc[]{ChemTermsCalculator.Calc.LogD},
-                new Object[][]{params},
-                new String[] {name});
-
-        mols = exec.calculate(mols, calculators, stats);
+        AtomicInteger errorCount = new AtomicInteger(0);
+        mols = mols.peek(mo -> {
+            if (mo == null) {
+                errorCount.incrementAndGet();
+            } else {
+                calculate(mo, stats);
+            }
+        });
 
         // we need to count the actual molecules calculated as the final number may be filtered
         final AtomicInteger total = new AtomicInteger(0);
         mols = mols.peek(mo -> total.incrementAndGet());
 
         // apply the filters
-        mols = Filters.applyFilters(mols, filterMode, calculators[0].getPropName(), minValue, maxValue);
+        mols = Filters.applyFilters(mols, filterMode, calculator.getPropName(), minValue, maxValue);
 
-        // reformat the results to 3 significant figures
-        mols = mols.peek(mo -> {
-            if (mo != null) {
-                Double value = mo.getProperty(name, Double.class);
-                if (value != null) {
-                    value = Utils.roundToSignificantFigures(value, 3);
-                    mo.setProperty(name, value);
-                }
-            }
-        });
 
         // if output is defined then set up a MolExporter to write the results
         if (outputFile != null) {
@@ -127,6 +130,20 @@ public class LogDCalc {
         long count = mols.count();
         DMLOG.logEvent(DMLogger.Level.INFO, "Processed " + total + " molecules, " + count + " passed filters");
         DMLOG.logCost((float) total.get(), false);
-        return new int[] {(int)count, exec.getErrorCount()};
+        return new int[] {(int)count, errorCount.intValue()};
+    }
+
+    public Double calculate(MoleculeObject mo, Map<String, Integer> stats) {
+
+        Molecule mol = mo.getMol();
+
+        Double logd = (Double) calculator.processMolecule(mol, stats);
+        if (logd != null) {
+            Double rounded = Utils.roundToSignificantFigures(logd, 3);
+            mo.setProperty(name, rounded);
+            return rounded;
+        } else {
+            return null;
+        }
     }
 }

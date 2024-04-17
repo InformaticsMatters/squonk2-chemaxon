@@ -9,10 +9,10 @@ class LogDCalcTest extends Specification {
     def "smi logd no filter"() {
 
         setup:
-        def calc = new LogDCalc()
+        def calc = new LogDCalc(7.4f)
 
         when:
-        def counts = calc.calculate("../data/10.smi", null, false, 7.4f, FilterMode.none, null, null)
+        def counts = calc.calculate("../data/10.smi", null, false, FilterMode.none, null, null)
 
         then:
         counts[0] == 10
@@ -22,10 +22,10 @@ class LogDCalcTest extends Specification {
     def "smi logd no filter bad"() {
 
         setup:
-        def calc = new LogDCalc()
+        def calc = new LogDCalc(7.4f)
 
         when:
-        def counts = calc.calculate("../data/bad.smi", null, false, 7.4f, FilterMode.none, null, null)
+        def counts = calc.calculate("../data/bad.smi", null, false, FilterMode.none, null, null)
 
         then:
         counts[0] == 10
@@ -35,10 +35,10 @@ class LogDCalcTest extends Specification {
     def "sdf logd no filter"() {
 
         setup:
-        def calc = new LogDCalc()
+        def calc = new LogDCalc(7.4f)
 
         when:
-        def counts = calc.calculate("../data/dhfr_3d-10.sdf", null, false, 7.4f, FilterMode.none, null, null)
+        def counts = calc.calculate("../data/dhfr_3d-10.sdf", null, false, FilterMode.none, null, null)
 
         then:
         counts[0] == 10
@@ -48,10 +48,10 @@ class LogDCalcTest extends Specification {
     def "sdf logd min filter"() {
 
         setup:
-        def calc = new LogDCalc()
+        def calc = new LogDCalc(7.4f)
 
         when:
-        def counts = calc.calculate("../data/dhfr_3d-10.sdf", null, false, 7.4f, FilterMode.pass, 3.0f, null)
+        def counts = calc.calculate("../data/dhfr_3d-10.sdf", null, false,FilterMode.pass, 3.0f, null)
 
         then:
         counts[0] == 5
@@ -61,10 +61,10 @@ class LogDCalcTest extends Specification {
     def "sdf logd max filter"() {
 
         setup:
-        def calc = new LogDCalc()
+        def calc = new LogDCalc(7.4f)
 
         when:
-        def counts = calc.calculate("../data/dhfr_3d-10.sdf",null, false, 7.4f, FilterMode.pass, null, 5.0f)
+        def counts = calc.calculate("../data/dhfr_3d-10.sdf",null, false, FilterMode.pass, null, 5.0f)
 
         then:
         counts[0] == 7
@@ -74,10 +74,10 @@ class LogDCalcTest extends Specification {
     def "sdf logd min and max filters"() {
 
         setup:
-        def calc = new LogDCalc()
+        def calc = new LogDCalc(7.4f)
 
         when:
-        def counts = calc.calculate("../data/dhfr_3d-10.sdf", null, false, 7.4f, FilterMode.pass, 3.0f, 5.0f)
+        def counts = calc.calculate("../data/dhfr_3d-10.sdf", null, false, FilterMode.pass, 3.0f, 5.0f)
 
         then:
         counts[0] == 2

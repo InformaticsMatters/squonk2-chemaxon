@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Informatics Matters Ltd.
+ * Copyright (c) 2024 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -115,7 +115,7 @@ public class SygCalcs {
     public int[] calculate(String inputFile, Writer output)
             throws Exception {
 
-        final PKaCalc pka = new PKaCalc();
+        final PKaCalc pka = new PKaCalc(true, true, 2);
 
         // read mols as stream
         Stream<MoleculeObject> mols = MoleculeUtils.readMoleculesAsStream(inputFile, "csv:fID,fMOL");
@@ -123,8 +123,7 @@ public class SygCalcs {
         Map<String, Integer> stats = new HashMap<>();
 
         Stream<MoleculeObject> stream = exec.calculate(mols, calcs, options, stats);
-
-        stream = stream.peek(mo -> pka.calcPka(mo, true, true, 2));
+        stream = stream.peek(mo -> pka.calculate(mo, stats));
 
         if (output != null) {
             Reporter reporter = new Reporter(output);

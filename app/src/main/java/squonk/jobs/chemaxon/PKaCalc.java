@@ -18,9 +18,7 @@ package squonk.jobs.chemaxon;
 
 import chemaxon.marvin.calculations.pKaPlugin;
 import chemaxon.marvin.plugin.PluginException;
-import chemaxon.struc.Molecule;
 import org.apache.commons.cli.*;
-import squonk.jobs.chemaxon.util.ChemTermsCalculator;
 import squonk.jobs.chemaxon.util.DMLogger;
 import squonk.jobs.chemaxon.util.MoleculeObject;
 import squonk.jobs.chemaxon.util.MoleculeUtils;
@@ -36,7 +34,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
-public class PKaCalc {
+import squonk.jobs.chemaxon.util.Calculator;
+
+public class PKaCalc implements Calculator {
 
     private static final Logger LOG = Logger.getLogger(PKaCalc.class.getName());
     private static final DMLogger DMLOG = new DMLogger();
@@ -47,18 +47,34 @@ public class PKaCalc {
     protected static final double DEFAULT_MIN_BASIC_VALUE = -2d;
     protected static final double DEFAULT_MIN_ACIDIC_VALUE = 16d;
     protected static final int DEFAULT_MAX_IONS = 6;
+    protected static final int DEFAULT_COUNT = 3;
 
     private final pKaPlugin plugin;
+    private final boolean acidic;
+    private final boolean basic;
+    final int count;
 
     public PKaCalc() {
-        this(DEFAULT_TEMPERATURE, DEFAULT_MIN_BASIC_VALUE, DEFAULT_MIN_ACIDIC_VALUE, DEFAULT_MAX_IONS);
+        this(true, true, DEFAULT_COUNT, DEFAULT_TEMPERATURE, DEFAULT_MIN_BASIC_VALUE, DEFAULT_MIN_ACIDIC_VALUE, DEFAULT_MAX_IONS);
     }
-    public PKaCalc(double temperature_k, double minBasic, double maxAcidic, int maxIons) {
+
+    public PKaCalc(boolean acidic, boolean basic, int count) {
+        this(acidic, basic, count, DEFAULT_TEMPERATURE, DEFAULT_MIN_BASIC_VALUE, DEFAULT_MIN_ACIDIC_VALUE, DEFAULT_MAX_IONS);
+    }
+
+    public PKaCalc(boolean acidic, boolean basic, int count, double temperature_k, double minBasic, double maxAcidic, int maxIons) {
+        if (count < 1 || count > 5) {
+            throw new IllegalArgumentException("Number of pKa values to calculate must be between 1 and 5 (inclusive)");
+        }
+
         plugin = new pKaPlugin();
         plugin.setTemperature(temperature_k);
         plugin.setMaxIons(maxIons);
         plugin.setBasicpKaLowerLimit(minBasic);
         plugin.setAcidicpKaUpperLimit(maxAcidic);
+        this.basic = basic;
+        this.acidic = acidic;
+        this.count = count;
     }
 
     public static void main(String[] args) throws Exception {
@@ -118,26 +134,23 @@ public class PKaCalc {
 
             boolean header = Boolean.valueOf(cmd.getOptionValue("header", "false"));
 
-            PKaCalc calc = new PKaCalc(temperature_k, minBasic, maxAcidic, maxIons);
-            calc.calculate(inputFile, outputFile, header, acidic, basic, count);
+            PKaCalc calc = new PKaCalc(acidic, basic, count, temperature_k, minBasic, maxAcidic, maxIons);
+            calc.calculatePka(inputFile, outputFile, header);
         }
     }
 
-    public int[] calculate(String inputFile, String outputFile, boolean includeHeader, boolean acidic, boolean basic, int numStrengths)
+    public int[] calculatePka(String inputFile, String outputFile, boolean includeHeader)
             throws IOException {
-
-        if (numStrengths < 1 || numStrengths > 5) {
-            throw new IllegalArgumentException("Number of pKa values to calculate must be between 1 and 5 (inclusive)");
-        }
 
         // read mols as stream
         Stream<MoleculeObject> mols = MoleculeUtils.readMoleculesAsStream(inputFile);
         final AtomicInteger errorCount = new AtomicInteger(0);
+        final Map<String, Integer> stats = new HashMap<>();
         mols = mols.peek(mo -> {
             if (mo == null) {
                 errorCount.incrementAndGet();
             } else {
-                calcPka(mo, acidic, basic, numStrengths);
+                calculate(mo, stats);
             }
         });
 
@@ -158,8 +171,9 @@ public class PKaCalc {
     }
 
 
-    protected void calcPka(MoleculeObject mo, boolean acidic, boolean basic, int count) {
+    public Object calculate(MoleculeObject mo, Map<String, Integer> stats) {
 
+        List<Double> values = new ArrayList<>();
         try {
             plugin.setMolecule(mo.getMol());
             plugin.run();
@@ -171,6 +185,7 @@ public class PKaCalc {
                 plugin.getMacropKaValues(pKaPlugin.ACIDIC, acidicpKas, acidicIndexes);
                 for (int i = 0; i < count; i++) {
                     if (acidicIndexes[i] >= 0) {
+                        values.add(acidicpKas[i]);
                         mo.setProperty("CXN_APKA" + (i + 1), df.format(acidicpKas[i]));
                         if (i > 0) {
                             acidicSummary.append("\n");
@@ -190,6 +205,7 @@ public class PKaCalc {
                 plugin.getMacropKaValues(pKaPlugin.BASIC, basicpKas, basicIndexes);
                 for (int i = 0; i < count; i++) {
                     if (basicIndexes[i] >= 0) {
+                        values.add(basicpKas[i]);
                         mo.setProperty("CXN_BPKA" + (i + 1), df.format(basicpKas[i]));
                         if (i > 0) {
                             basicSummary.append("\n");
@@ -205,5 +221,6 @@ public class PKaCalc {
         } catch (PluginException pe) {
             LOG.log(Level.INFO, "Failed to calculate pKa", pe);
         }
+        return values;
     }
 }

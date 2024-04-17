@@ -11,7 +11,7 @@ class GuptaBBBCalcTest extends Specification {
         def calc = new GuptaBBBCalc()
 
         when:
-        def counts = calc.calculate("../data/10.smi", null, false, FilterMode.none, null, null)
+        def counts = calc.calculateBBB("../data/10.smi", null, false, FilterMode.none, null, null)
 
         then:
         counts[0] == 10
@@ -24,7 +24,7 @@ class GuptaBBBCalcTest extends Specification {
         def calc = new GuptaBBBCalc()
 
         when:
-        def counts = calc.calculate("../data/bad.smi", null, false, FilterMode.none, null, null)
+        def counts = calc.calculateBBB("../data/bad.smi", null, false, FilterMode.none, null, null)
 
         then:
         counts[0] == 10
@@ -37,7 +37,7 @@ class GuptaBBBCalcTest extends Specification {
         def calc = new GuptaBBBCalc()
 
         when:
-        def counts = calc.calculate("../data/dhfr_3d-10.sdf", null, false, FilterMode.none, null, null)
+        def counts = calc.calculateBBB("../data/dhfr_3d-10.sdf", null, false, FilterMode.none, null, null)
 
         then:
         counts[0] == 10
@@ -50,7 +50,7 @@ class GuptaBBBCalcTest extends Specification {
         def calc = new GuptaBBBCalc()
 
         when:
-        def counts = calc.calculate("../data/dhfr_3d-10.sdf", null, false, FilterMode.pass, 3.0f, null)
+        def counts = calc.calculateBBB("../data/dhfr_3d-10.sdf", null, false, FilterMode.pass, 3.0f, null)
 
         then:
         counts[0] == 9
@@ -63,7 +63,7 @@ class GuptaBBBCalcTest extends Specification {
         def calc = new GuptaBBBCalc()
 
         when:
-        def counts = calc.calculate("../data/dhfr_3d-10.sdf",null, false, FilterMode.pass, null, 4.0f)
+        def counts = calc.calculateBBB("../data/dhfr_3d-10.sdf",null, false, FilterMode.pass, null, 4.0f)
 
         then:
         counts[0] == 6
@@ -76,7 +76,7 @@ class GuptaBBBCalcTest extends Specification {
         def calc = new GuptaBBBCalc()
 
         when:
-        def counts = calc.calculate("../data/dhfr_3d-10.sdf", null, false, FilterMode.pass, 2.0f, 4.0f)
+        def counts = calc.calculateBBB("../data/dhfr_3d-10.sdf", null, false, FilterMode.pass, 2.0f, 4.0f)
 
         then:
         counts[0] == 5

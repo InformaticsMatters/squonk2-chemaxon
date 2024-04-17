@@ -4,28 +4,34 @@ import spock.lang.FailsWith
 import spock.lang.Specification
 import squonk.jobs.chemaxon.util.ChemTermsCalculator
 
-class SimpleCalcsTest extends Specification {
+class MultiCalcTest extends Specification {
 
-    def "calc sdf all"() {
+    def calcs = [
+            "molecular-weight",
+            "atom-count",
+            "gupta-bbb"
+    ] as String[]
+
+    def "calc sdf"() {
 
         setup:
-        def sc = new SimpleCalcs()
+        def sc = new MultiCalc()
 
         when:
-        def counts = sc.calculate(ChemTermsCalculator.Calc.values(), "../data/dhfr_3d-10.sdf", null, false)
+        def counts = sc.calculate(calcs, "../data/dhfr_3d-10.sdf", null, false)
 
         then:
         counts[0] == 10
         counts[1] == 0
     }
 
-    def "calc smi all"() {
+    def "calc smi"() {
 
         setup:
-        def sc = new SimpleCalcs()
+        def sc = new MultiCalc()
 
         when:
-        def counts = sc.calculate(ChemTermsCalculator.Calc.values(), "../data/10.smi", null, true)
+        def counts = sc.calculate(calcs, "../data/10.smi", null, true)
 
         then:
         counts[0] == 10
@@ -33,13 +39,13 @@ class SimpleCalcsTest extends Specification {
     }
 
     @FailsWith(chemaxon.formats.MolFormatException)
-    def "calc csv all"() {
+    def "calc csv"() {
 
         setup:
-        def sc = new SimpleCalcs()
+        def sc = new MultiCalc()
 
         when:
-        def counts = sc.calculate(ChemTermsCalculator.Calc.values(), "../data/10.csv", null, true)
+        def counts = sc.calculate(calcs, "../data/10.csv", null, true)
 
         then:
         counts[0] == 10
@@ -50,7 +56,7 @@ class SimpleCalcsTest extends Specification {
      *  The file has 10 records including 2 bad molecules
      * @return
      */
-    def "calc bad all"() {
+    def "calc bad"() {
 
         setup:
         def sc = new SimpleCalcs()

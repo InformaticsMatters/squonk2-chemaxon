@@ -18,6 +18,8 @@ plugins {
 
     // docker plugin
     id 'com.bmuschko.docker-java-application' version '7.3.0'
+
+    id 'project-report'
 }
 
 import static com.bmuschko.gradle.docker.tasks.image.Dockerfile.*
@@ -48,6 +50,7 @@ dependencies {
     implementation files('libs/commons-cli-1.5.0.jar')
 
     implementation("com.chemaxon:jchem-main:22.9.0") {
+//    implementation("com.chemaxon:jchem-main:22.16.0") {
 
         exclude group:'com.chemaxon',module:'msketch-javahelp'
         exclude group:'com.chemaxon',module:'mview-javahelp'

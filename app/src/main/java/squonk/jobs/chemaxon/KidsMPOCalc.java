@@ -31,12 +31,45 @@ import java.util.stream.Stream;
 /**
  * Calculates KIDS MPO score
  */
-public class KidsMPOCalc {
+public class KidsMPOCalc implements Calculator {
 
     private static final Logger LOG = Logger.getLogger(KidsMPOCalc.class.getName());
     private static final DMLogger DMLOG = new DMLogger();
 
     public static final String SCORE_FIELD = "KIDS_MPO";
+
+    final ChemTermsCalculator[] calculators;
+    final NumberTransform[] transforms;
+
+    public KidsMPOCalc() {
+        final CalculatorsExec exec = new CalculatorsExec();
+        this.calculators = exec.createCalculators(
+                new ChemTermsCalculator.Calc[]{
+                        ChemTermsCalculator.Calc.TPSA,
+                        ChemTermsCalculator.Calc.RotatableBondCount,
+                        ChemTermsCalculator.Calc.ElementCount,
+                        ChemTermsCalculator.Calc.ElementCount,
+                        ChemTermsCalculator.Calc.HBondDonorCount,
+                        ChemTermsCalculator.Calc.AromaticRingCount
+                },
+                new Object[][]{
+                        null,
+                        null,
+                        new Object[] {7},
+                        new Object[] {8},
+                        null,
+                        null
+                });
+
+        this.transforms = new NumberTransform[]{
+                MpoFunctions.createHump1Function(0d, 1d, 0d, 64.63d, 75.85d, 92.40d, 138.3d),
+                MpoFunctions.createHump1Function(0.2d, 1d, 0d, 1d, 2d, 3d, 5d),
+                MpoFunctions.createHump2Function(0d, 1d, 0.2d, 0d, 2d, 4d, 5d, 6d, 8d, 9d),
+                MpoFunctions.createHump1Function(0.2d, 1d, 0d, 0d, 1d, 1d, 3d),
+                MpoFunctions.createHump2Function(0d, 1d, 0.2d, 0d, 0d, 2d, 3d, 4d, 6d, 7d),
+                MpoFunctions.createHump2Function(0d, 1d, 0.2d, 0d, 1d, 3d, 3d, 4d, 4d, 5d)
+        };
+    }
 
     public static void main(String[] args) throws Exception {
 
@@ -124,11 +157,7 @@ public class KidsMPOCalc {
             if (mo == null) {
                 errorCount.incrementAndGet();
             } else {
-                Molecule mol = mo.getMol();
-                Double score = doCalculate(mol, calculators, transforms, stats);
-                if (score != null) {
-                    mo.setProperty(SCORE_FIELD, score);
-                }
+                calculate(mo, stats);
             }
         });
 
@@ -153,22 +182,14 @@ public class KidsMPOCalc {
     }
 
     /**
-     * Performs the CNS MPO calculation
-     * @param mol
-     * @param calculators
+     * Performs the Kids MPO calculation
+     * @param mo
      * @param stats
      * @return
      */
-    protected Double doCalculate(Molecule mol, ChemTermsCalculator[] calculators,
-                                 NumberTransform[] transforms,
-                                 Map<String, Integer> stats) {
+    public Double calculate(MoleculeObject mo, Map<String, Integer> stats) {
 
-//        ChemTermsCalculator.Calc.TPSA,
-//                ChemTermsCalculator.Calc.RotatableBondCount,
-//                ChemTermsCalculator.Calc.ElementCount,
-//                ChemTermsCalculator.Calc.ElementCount,
-//                ChemTermsCalculator.Calc.HBondDonorCount,
-//                ChemTermsCalculator.Calc.AromaticRingCount
+        Molecule mol = mo.getMol();
 
         // this does the calculations that are used to generate the MPO score
         Double tpsa = (Double)calculators[0].processMolecule(mol, stats);
@@ -196,6 +217,8 @@ public class KidsMPOCalc {
 
         Double score_mpo = Utils.roundToSignificantFigures(
                 tpsa_score + rotb_score + n_count_score + o_count_score + hbd_score + aro_score, 4);
+
+        mo.setProperty(SCORE_FIELD, score_mpo);
         return score_mpo;
     }
 

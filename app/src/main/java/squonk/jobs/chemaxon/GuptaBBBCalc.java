@@ -22,9 +22,6 @@ import squonk.jobs.chemaxon.util.*;
 import squonk.jobs.chemaxon.util.Filters.FilterMode;
 
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.math.MathContext;
-import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -35,7 +32,27 @@ import java.util.stream.Stream;
  * Calculates BBB MPS score as defined in Gupta et al., J. Med. Chem. 2019, 62, 9824−9836.
  * DOI: 10.1021/acs.jmedchem.9b01220
  */
-public class GuptaBBBCalc {
+public class GuptaBBBCalc implements Calculator {
+
+    private final ChemTermsCalculator[] calculators;
+
+    public GuptaBBBCalc() {
+        final CalculatorsExec exec = new CalculatorsExec();
+
+        this.calculators = exec.createCalculators(
+                new ChemTermsCalculator.Calc[]{
+                        ChemTermsCalculator.Calc.AromaticRingCount,
+                        ChemTermsCalculator.Calc.HeavyAtomCount,
+                        ChemTermsCalculator.Calc.HBondAcceptorCount,
+                        ChemTermsCalculator.Calc.HBondDonorCount,
+                        ChemTermsCalculator.Calc.MolecularWeight,
+                        ChemTermsCalculator.Calc.TPSA,
+                        ChemTermsCalculator.Calc.RotatableBondCount,
+                        ChemTermsCalculator.Calc.AcidicPKa,
+                        ChemTermsCalculator.Calc.BasicPKa
+                },
+                null);
+    }
 
     private static final Logger LOG = Logger.getLogger(GuptaBBBCalc.class.getName());
     private static final DMLogger DMLOG = new DMLogger();
@@ -86,41 +103,23 @@ public class GuptaBBBCalc {
             boolean header = Boolean.valueOf(cmd.getOptionValue("header", "true"));
 
             GuptaBBBCalc calc = new GuptaBBBCalc();
-            calc.calculate(inputFile, outputFile, header, filterMode, minValue, maxValue);
+            calc.calculateBBB(inputFile, outputFile, header, filterMode, minValue, maxValue);
         }
     }
 
-    public int[] calculate(String inputFile, String outputFile, boolean includeHeader, FilterMode mode,
-                          Float minValue, Float maxValue) throws IOException {
+    public int[] calculateBBB(String inputFile, String outputFile, boolean includeHeader, FilterMode mode,
+                              Float minValue, Float maxValue) throws IOException {
         // read mols as stream
         Stream<MoleculeObject> mols = MoleculeUtils.readMoleculesAsStream(inputFile);
-        final CalculatorsExec exec = new CalculatorsExec();
         final Map<String, Integer> stats = new HashMap<>();
 
-        final ChemTermsCalculator[] calculators = exec.createCalculators(
-                new ChemTermsCalculator.Calc[]{
-                        ChemTermsCalculator.Calc.AromaticRingCount,
-                        ChemTermsCalculator.Calc.HeavyAtomCount,
-                        ChemTermsCalculator.Calc.HBondAcceptorCount,
-                        ChemTermsCalculator.Calc.HBondDonorCount,
-                        ChemTermsCalculator.Calc.MolecularWeight,
-                        ChemTermsCalculator.Calc.TPSA,
-                        ChemTermsCalculator.Calc.RotatableBondCount,
-                        ChemTermsCalculator.Calc.AcidicPKa,
-                        ChemTermsCalculator.Calc.BasicPKa
-                },
-                null);
 
         AtomicInteger errorCount = new AtomicInteger(0);
         mols = mols.peek(mo -> {
             if (mo == null) {
                 errorCount.incrementAndGet();
             } else {
-                Molecule mol = mo.getMol();
-                Double bbb_score = doCalculate(mol, calculators, stats);
-                if (bbb_score != null) {
-                    mo.setProperty(SCORE_FIELD, bbb_score);
-                }
+                calculate(mo, stats);
             }
         });
 
@@ -146,12 +145,13 @@ public class GuptaBBBCalc {
 
     /**
      * Performs the BBB calculation
-     * @param mol
-     * @param calculators
+     * @param mo
      * @param stats
      * @return
      */
-    protected Double doCalculate(Molecule mol, ChemTermsCalculator[] calculators, Map<String, Integer> stats) {
+    public Double calculate(MoleculeObject mo, Map<String, Integer> stats) {
+
+        Molecule mol = mo.getMol();
 
         // this does the calculations that are used to generate the BBB score
         Integer aro = (Integer)calculators[0].processMolecule(mol, stats);
@@ -190,6 +190,8 @@ public class GuptaBBBCalc {
                 score_aro + score_hac + (1.5d * score_mwhbn) + (2d * score_tpsa) + (0.5d * score_pka), 4);
         LOG.fine(String.format("Scores are: aro=%s, hac=%s, mwhbn=%s, tpsa=%s, pka=%s, bbb=%s",
                 score_aro, score_hac, score_mwhbn, score_tpsa, score_pka, score_mps));
+
+        mo.setProperty(SCORE_FIELD, score_mps);
 
         return score_mps;
     }

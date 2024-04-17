@@ -32,21 +32,44 @@ import java.util.stream.Stream;
  * Calculates CNS MPO score
  * See Wager et al. DOI: 10.1021/cn100008c
  */
-public class PfizerCNSMPOCalc {
+public class PfizerCNSMPOCalc implements Calculator {
 
     private static final Logger LOG = Logger.getLogger(PfizerCNSMPOCalc.class.getName());
     private static final DMLogger DMLOG = new DMLogger();
 
     public static final String SCORE_FIELD = "Pfizer_CNS_MPO";
 
+    private final ChemTermsCalculator[] calculators;
     private static final NumberTransform[] transforms = new NumberTransform[]{
-            MpoFunctions.createRampFunction(1d, 0d, 3d, 5d),
-            MpoFunctions.createRampFunction(1d, 0d, 2d, 4d),
-            MpoFunctions.createRampFunction(1d, 0d, 360d, 500d),
-            MpoFunctions.createHump1Function(0d, 1d, 0d, 20d, 40d, 90d, 120d),
-            MpoFunctions.createRampFunction(1d, 0d, 0.5d, 3.5d),
-            MpoFunctions.createRampFunction(1d, 0d, 8d, 10d)
+        MpoFunctions.createRampFunction(1d, 0d, 3d, 5d),
+                MpoFunctions.createRampFunction(1d, 0d, 2d, 4d),
+                MpoFunctions.createRampFunction(1d, 0d, 360d, 500d),
+                MpoFunctions.createHump1Function(0d, 1d, 0d, 20d, 40d, 90d, 120d),
+                MpoFunctions.createRampFunction(1d, 0d, 0.5d, 3.5d),
+                MpoFunctions.createRampFunction(1d, 0d, 8d, 10d)
     };
+
+    public PfizerCNSMPOCalc() {
+        final CalculatorsExec exec = new CalculatorsExec();
+
+        this.calculators = exec.createCalculators(
+                new ChemTermsCalculator.Calc[]{
+                        ChemTermsCalculator.Calc.LogP,
+                        ChemTermsCalculator.Calc.LogD,
+                        ChemTermsCalculator.Calc.MolecularWeight,
+                        ChemTermsCalculator.Calc.TPSA,
+                        ChemTermsCalculator.Calc.HBondDonorCount,
+                        ChemTermsCalculator.Calc.BasicPKa
+                },
+                new Object[][]{
+                        null,
+                        new Object[]{7.4f},
+                        null,
+                        null,
+                        null,
+                        null
+                });
+    }
 
     public static void main(String[] args) throws Exception {
 
@@ -99,26 +122,7 @@ public class PfizerCNSMPOCalc {
                            Float minValue, Float maxValue) throws IOException {
         // read mols as stream
         Stream<MoleculeObject> mols = MoleculeUtils.readMoleculesAsStream(inputFile);
-        final CalculatorsExec exec = new CalculatorsExec();
         final Map<String, Integer> stats = new HashMap<>();
-
-        final ChemTermsCalculator[] calculators = exec.createCalculators(
-                new ChemTermsCalculator.Calc[]{
-                        ChemTermsCalculator.Calc.LogP,
-                        ChemTermsCalculator.Calc.LogD,
-                        ChemTermsCalculator.Calc.MolecularWeight,
-                        ChemTermsCalculator.Calc.TPSA,
-                        ChemTermsCalculator.Calc.HBondDonorCount,
-                        ChemTermsCalculator.Calc.BasicPKa
-                },
-                new Object[][]{
-                        null,
-                        new Object[]{7.4f},
-                        null,
-                        null,
-                        null,
-                        null
-                });
 
         AtomicInteger errorCount = new AtomicInteger(0);
 
@@ -126,11 +130,7 @@ public class PfizerCNSMPOCalc {
             if (mo == null) {
                 errorCount.incrementAndGet();
             } else {
-                Molecule mol = mo.getMol();
-                Double score = doCalculate(mol, calculators, stats);
-                if (score != null) {
-                    mo.setProperty(SCORE_FIELD, score);
-                }
+                calculate(mo, stats);
             }
         });
 
@@ -161,13 +161,13 @@ public class PfizerCNSMPOCalc {
     /**
      * Performs the CNS MPO calculation
      *
-     * @param mol
-     * @param calculators
+     * @param mo
      * @param stats
      * @return
      */
-    protected Double doCalculate(Molecule mol, ChemTermsCalculator[] calculators,
-                                 Map<String, Integer> stats) {
+    public Double calculate(MoleculeObject mo, Map<String, Integer> stats) {
+
+        Molecule mol = mo.getMol();
 
         // this does the calculations that are used to generate the MPO score
         Double logp = (Double) calculators[0].processMolecule(mol, stats);
@@ -177,9 +177,11 @@ public class PfizerCNSMPOCalc {
         Integer hbd = (Integer) calculators[4].processMolecule(mol, stats);
         Double bpka = (Double) calculators[5].processMolecule(mol, stats);
 
-
-        return calculateScore(logp, logd, mw, tpsa, hbd, bpka);
-
+        Double score = calculateScore(logp, logd, mw, tpsa, hbd, bpka);
+        if (score != null) {
+            mo.setProperty(SCORE_FIELD, score);
+        }
+        return score;
     }
 
     protected static Double calculateScore(Double logp, Double logd, Double mw, Double tpsa, Integer hbd, Double bpka) {

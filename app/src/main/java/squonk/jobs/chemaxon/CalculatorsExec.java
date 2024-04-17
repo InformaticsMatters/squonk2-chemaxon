@@ -19,10 +19,8 @@ package squonk.jobs.chemaxon;
 import squonk.jobs.chemaxon.util.ChemTermsCalculator;
 import squonk.jobs.chemaxon.util.MoleculeObject;
 
-import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
@@ -62,11 +60,7 @@ public class CalculatorsExec {
         } else {
             // if null then a bad molecule was encountered
             for (ChemTermsCalculator calculator : calculators) {
-                try {
-                    calculator.processMoleculeObject(mo, stats);
-                } catch (IOException e) {
-                    LOG.log(Level.INFO, "Failed to calculate " + calculator.getChemTermsExpr(), e);
-                }
+                calculator.calculate(mo, stats);
             }
         }
     }
