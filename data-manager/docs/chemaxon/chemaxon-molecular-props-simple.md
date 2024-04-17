@@ -26,9 +26,14 @@ These properties (with the corresponding field names in brackets) are:
 - Aromatic atom count (CXN_aromaticAtomCount)
 - Rotatable bond count (CXN_rotatableBondCount)
 - Topological polar surface area (CXN_tpsa)
+- Most acidic pKa
+- Most basic pKa
 
 The jobs can handle SD-files or delimited text files (e.g. tab separated) as input and output.
 When using delimited text files the molecules are read and written as SMILES.
+
+You may prefer to use the [chemaxon-molecular-multi-calc](chemaxon-molecular-multi-calc.md) job as it has a wider range of
+calculations and allows to define the order the calculations appear in the results.
 
 ## Implementation details
 
@@ -63,4 +68,5 @@ The type of file is determined from the file extension, `.sdf` for SD file, `.sm
 
 ## Related topics
 
+* [chemaxon-molecular-multi-calc](chemaxon-molecular-multi-calc.md) Similar job with wider range of options.
 * [chemaxon-molecular-props-logd](chemaxon-molecular-props-logd.md) Specialist calculator for logD.
