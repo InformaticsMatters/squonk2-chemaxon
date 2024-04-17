@@ -383,7 +383,7 @@ jobs:
       --input '{{ inputFile }}'
       --output '{{ outputFile }}'
       {% if header is defined and header %}--header {{ header }}{% endif %}
-      --calculators '{% for calc in calculators.split() %} {{ calc }}{% endfor %}'
+      --calculators '{% for calc in calculators %} {{ calc }}{% endfor %}'
     variables:
       order:
         options:
@@ -559,7 +559,27 @@ jobs:
           inputFile: data/dhfr_3d-10.sdf
         options:
           outputFile: foo/cxn-predictions.sdf
-          calculators: molecular-weight molecular-formula atom-count heavy-atom-count bond-count logp logd hba-count hbd-count hba-sites hbd-sites ring-count ring-atom-count aromatic-ring-count aromatic-atom-count rotatable-bond-count tpsa acidic-pka basic-pka gupta-bbb pfizer-cns-mpo abbvie-mps kids-mpo
+          calculators:
+          - molecular-weight
+          - molecular-formula
+          - atom-count
+          - heavy-atom-count
+          - bond-count
+          - logp logd
+          - hba-count
+          - hbd-count
+          - hba-sites
+          - hbd-sites
+          - ring-count
+          - ring-atom-count
+          - aromatic-ring-count
+          - aromatic-atom-count
+          - rotatable-bond-count
+          - tpsa acidic-pka
+          - basic-pka
+          - gupta-bbb
+          - pfizer-cns-mpo
+          - abbvie-mps kids-mpo
         checks:
           exitCode: 0
           outputs:
