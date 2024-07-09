@@ -485,6 +485,9 @@ jobs:
                   KIDS_MPO:
                     type: number
                     description: KIDS MPO prediction
+                  BPI:
+                    type: number
+                    description: Balanced Property Index
               derived-from: inputFile
       options:
         type: object
@@ -553,6 +556,8 @@ jobs:
                 title: Rotatable bond count
               - const: tpsa
                 title: Topological polar surface area
+              - const: bpi
+                title: Balanced Property Index
     tests:
       simple-execution:
         inputs:
@@ -579,7 +584,9 @@ jobs:
           - basic-pka
           - gupta-bbb
           - pfizer-cns-mpo
-          - abbvie-mps kids-mpo
+          - abbvie-mps
+          - kids-mpo
+          - bpi
         checks:
           exitCode: 0
           outputs:

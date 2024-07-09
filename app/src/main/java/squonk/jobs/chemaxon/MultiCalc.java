@@ -160,6 +160,9 @@ public class MultiCalc {
                 case "kids-mpo":
                     calcs.add(new KidsMPOCalc());
                     break;
+                case "bpi":
+                    calcs.add(new BalancedPropertyIndexCalc());
+                    break;
                 default:
                     DMLOG.logEvent(DMLogger.Level.WARNING, "Invalid calculator specified: " + token);
                     break;
